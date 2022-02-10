@@ -1,1 +1,1 @@
-# SearchEngine University project for a basic search engine
+University project for a basic search engine
