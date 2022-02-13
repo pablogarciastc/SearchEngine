@@ -2,7 +2,8 @@ import json
 import glob
 import string
 from nltk import word_tokenize
-
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
 
 
 def delete_fields(entry):  # deleting unnecesary fields
@@ -16,6 +17,16 @@ def delete_fields(entry):  # deleting unnecesary fields
     return entry
 
 
+def lists_to_str(entry):
+    if 'majorSubjects' in entry:
+        entry["majorSubjects"] = " ".join(str(x)
+                                          for x in entry["majorSubjects"])
+    if 'minorSubjects' in entry:
+        entry["minorSubjects"] = " ".join(str(x)
+                                          for x in entry["minorSubjects"])
+    return entry
+
+
 def combiner(path1):  # combine several json files to 1
     combined = "["
     for json_file in glob.glob(path1 + '\*.json'):
@@ -23,8 +34,9 @@ def combiner(path1):  # combine several json files to 1
             data = json.loads(infile.read())
             for entry in data:
                 entry = delete_fields(entry)
-                str = json.dumps(entry)
-                combined += str
+                entry = lists_to_str(entry)
+                entry_str = json.dumps(entry)
+                combined += entry_str
                 combined += ",\n"
     combined = combined[:-2]
     combined += "]"
@@ -40,41 +52,57 @@ def ini_variables():
 
 
 def lowercase(combined):
-    combined = combined.lower()
-    return combined
+    return combined.lower()
 
 
-def depunctuation(word):
+def depunctuation(entry):
     return "".join(
-        [char for char in word if char not in string.punctuation])
+        [char for char in entry if char not in string.punctuation])
 
 
-def step1(combined):
+def tokenizer(entry):
+    return word_tokenize(entry)
+
+
+def remove_stopwords(entry, stopwords):
+    return [word for word in entry if word not in stopwords]
+
+def stemming(entry,porter):
+    return [porter.stem(word) for word in entry]
+
+def normalize_fields(combined):
+    stop_words = stopwords.words('english')
+    porter = PorterStemmer()
     for entry in combined:
-        entry['title'] = depunctuation(entry['title'])
+        #In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
+        entry['title'] = stemming(remove_stopwords(
+            tokenizer(depunctuation(entry['title'])), stop_words),porter)
         if 'abstract/extract' in entry:
-            entry['abstract/extract'] = depunctuation(entry['abstract/extract'])
+            entry['abstract/extract'] = stemming(remove_stopwords(tokenizer(depunctuation(
+                entry['abstract/extract'])), stop_words),porter)
         if 'majorsubjects' in entry:
-            for x in range(len(entry['majorsubjects'])):
-                entry['majorsubjects'][x] = depunctuation(entry['majorsubjects'][x])
-        if 'minorsubjects' in entry:  ###convertir la lista a string
-            for x in range(len(entry['minorsubjects'])):
-                entry['minorsubjects'][x] = depunctuation(entry['minorsubjects'][x])
+            entry['majorsubjects'] = stemming(remove_stopwords(tokenizer(depunctuation(
+                entry['majorsubjects'])), stop_words),porter)
+        if 'minorsubjects' in entry:  # convertir la lista a string
+            entry['minorsubjects'] = stemming(remove_stopwords(tokenizer(depunctuation(
+                entry['minorsubjects'])), stop_words),porter)
         if 'description' in entry:
-            entry['description'] = depunctuation(entry['description'])
+            entry['description'] = stemming(remove_stopwords(tokenizer(
+                depunctuation(entry['description'])), stop_words),porter)
+    print(combined)
     return combined
 
 
 def normalize(combined, path1):
     combined = lowercase(combined)
-    res = json.loads(combined)
-    combined = step1(res)
+    combined = normalize_fields(json.loads(combined))
 
 
 def cf():
     path1 = ini_variables()
     combined = combiner(path1)
-    normalize(combined, path1)
+    combined = normalize(combined, path1)
+    print(combined)
 
 
 def moocs():
