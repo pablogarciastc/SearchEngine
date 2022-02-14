@@ -1,7 +1,5 @@
 from nltk.tokenize import word_tokenize
 import json
-import nltk
-
 def addToDict(papernum,value,key,dict):
     if type(value) is list:
         for item in value:
