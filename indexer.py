@@ -22,12 +22,38 @@ def common(this_json,paper):
                 dict=addToDict(papernum,value,key,dict)
     return dict
 
+def postInd(dict):
+    out_json={}
+    for item in dict:
+        i=1
+        docs=[]
+        for value in dict[item]:
+            if i==1:
+                id=str(value)
+            elif i==2:
+                reps=str(value)
+            else:
+                part=str(value)
+                this_docs={}
+                this_docs['id']=str(id)
+                this_docs['reps']=str(reps)
+                this_docs['part']=str(part)
+                docs.append(this_docs)
+                i=0
+            i=i+1
+        this_word={}
+        this_word['idf']=str(len(docs))
+        this_word['docs']=docs
+        out_json[item]=this_word
+    return out_json
+
 def cf():
     with open('.\corpora\cf\json\json_norm\cf_norm.json') as json_file:
         cf_json = json.load(json_file)
     dict=common(cf_json,'papernum')   
+    cf_index=postInd(dict)
     with open('.\indices\cf.json', 'w') as f3:
-        f3.write(str(dict))
+        f3.write(str(cf_index))
         f3.close()
 
 
@@ -35,14 +61,14 @@ def moocs():
     with open('.\corpora\moocs\json\json_norm\moocs_norm.json') as json_file:
         moocs_json = json.load(json_file)
     dict=common(moocs_json,'courseid')   
+    cf_index=postInd(dict)
     with open('.\indices\moocs.json', 'w') as f3:
-        f3.write(str(dict))
+        f3.write(str(cf_index))
         f3.close()
 
 def main():
     cf()
-    moocs()
-
+    #moocs()
 
 if __name__ == '__main__':
     main()
