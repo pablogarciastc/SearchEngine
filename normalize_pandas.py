@@ -2,10 +2,13 @@ import json
 import pandas as pd
 import glob
 import string
-import numpy as np
 from nltk import word_tokenize
 from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
+from nltk.stem.snowball import SnowballStemmer
+from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+
+
 
 
 def delete_fields_cf(df):  # deleting unnecesary fields
@@ -56,32 +59,37 @@ def depunctuation(entry):
     return "".join(
         [char for char in entry if char not in string.punctuation])
 
-def normalize_row(row, porter, stop_words):
+def lemmatize_text(text):
+    lemmatizer = WordNetLemmatizer()
+    return [lemmatizer.lemmatize(w) for w in text]
+
+
+def normalize_row(row, porter, stop_words):# In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
     row = (row.apply(depunctuation)).apply(word_tokenize)
     row.apply(lambda words: ' '.join(
         word for word in words if word not in stop_words))
     row = row.apply(lambda x: [porter.stem(y) for y in x])  # Stem every word.
+    row = row.apply(lemmatize_text)
     return row
 
 
-# In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
+
 def normalize_fields(df):
     stop_words = stopwords.words('english')
-    porter = PorterStemmer()
+    porter = SnowballStemmer(language='english')
     df.fillna('', inplace=True)
     if len(df.columns) == 5:  # cf
-        df['title'] = normalize_row(df['title'],porter, stop_words)
+        df['title'] = normalize_row(df['title'], porter, stop_words)
         df['majorSubjects'] = normalize_row(
-            df['majorSubjects'],porter, stop_words)
+            df['majorSubjects'], porter, stop_words)
         df['minorSubjects'] = normalize_row(
-            df['minorSubjects'],porter, stop_words)
+            df['minorSubjects'], porter, stop_words)
         df['abstract/extract'] = normalize_row(
-            df['abstract/extract'], porter,stop_words)
+            df['abstract/extract'], porter, stop_words)
     if len(df.columns) == 3:  # moocs
-        df['title'] = normalize_row(df['title'], porter,stop_words)
+        df['title'] = normalize_row(df['title'], porter, stop_words)
         df['description'] = normalize_row(
-            df['description'], porter,stop_words)
-
+            df['description'], porter, stop_words)
     return df
 
 
@@ -90,6 +98,10 @@ def normalize(df):
     df = normalize_fields(df)
     return df
 
+def utf_chars(df):
+     df['description'] = df['description'].apply(lambda x: x.encode('ascii', 'ignore').decode('unicode_escape').strip())
+     df['title'] = df['title'].apply(lambda x: x.encode('ascii', 'ignore').decode('unicode_escape').strip())
+     return df
 
 def cf():
     path1 = '.\corpora\cf\json'
@@ -111,6 +123,7 @@ def moocs():
         moocs_json = json.loads(f.read())
     df_moocs = pd.json_normalize(moocs_json)
     df_moocs = delete_fields_moocs(df_moocs)
+    df_moocs = utf_chars(df_moocs)
     df_moocs = normalize(df_moocs)
     result = df_moocs.to_json(orient="records")
     parsed = json.loads(result)
