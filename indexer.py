@@ -30,7 +30,7 @@ def postInd(dict):
         for value in dict[item]:
             if i==1:
                 id=str(value)
-            elif i==2:
+            elif i==2: 
                 reps=str(value)
             else:
                 part=str(value)
