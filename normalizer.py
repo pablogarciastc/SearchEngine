@@ -5,7 +5,6 @@ from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-
 def delete_fields_cf(entry):  # deleting unnecesary fields
     entry.pop('recordNum', None)
     entry.pop('acessionNum', None)
@@ -29,7 +28,6 @@ def lists_to_str(entry):
                                           for x in entry["minorSubjects"])
     return entry
 
-
 def cf_combiner(path1):  # combine several json files to 1
     combined = "["
     for json_file in glob.glob(path1 + '\*.json'):
@@ -38,7 +36,7 @@ def cf_combiner(path1):  # combine several json files to 1
             for entry in data:
                 entry = delete_fields_cf(entry)
                 entry = lists_to_str(entry)
-                entry_str = json.dumps(entry)
+                entry_str = json.dumps(entry, ensure_ascii=False)
                 combined += entry_str
                 combined += ",\n"
     combined = combined[:-2]
@@ -50,38 +48,30 @@ def moocs_str(moocs_json):
     json_str = "["
     for entry in moocs_json:
         entry = delete_fields_moocs(entry)
-        entry = lists_to_str(entry)
-        entry_str = json.dumps(entry)
+        entry_str = json.dumps(entry, ensure_ascii=False)
         json_str += entry_str
         json_str += ",\n"
     json_str = json_str[:-2]
     json_str += "]"
-    print(json_str)
     return json_str
-
 
 def lowercase(combined):
     return combined.lower()
-
 
 def depunctuation(entry):
     return "".join(
         [char for char in entry if char not in string.punctuation])
 
-
 def tokenizer(entry):
     return word_tokenize(entry)
-
 
 def remove_stopwords(entry, stopwords):
     return [word for word in entry if word not in stopwords]
 
-
 def stemming(entry, porter):
     return [porter.stem(word) for word in entry]
 
-
-def normalize_fields(combined, path):
+def normalize_fields(combined):
     stop_words = stopwords.words('english')
     porter = PorterStemmer()
     for entry in combined:
@@ -102,37 +92,32 @@ def normalize_fields(combined, path):
                 depunctuation(entry['description'])), stop_words), porter)
     return combined
 
-
-def normalize(combined, path):
+def normalize(combined):
     combined = lowercase(combined)
-    combined = normalize_fields(json.loads(combined), path)
-    return json.dumps(combined)
-
+    combined = normalize_fields(json.loads(combined))
+    return json.dumps(combined, ensure_ascii=False)
 
 def cf():
     path1 =  '.\corpora\cf\json'
     cf_json = cf_combiner(path1)
-    cf_json = normalize(cf_json, path1)
+    cf_json = normalize(cf_json)
     with open(path1 + '\json_norm\cf_norm.json', 'w') as f3:
         f3.write(cf_json)
         f3.close()
-
 
 def moocs():
     path2 =  '.\corpora\moocs\json'
     with open(path2+'\moocs.json') as json_file:
         moocs_json = json.load(json_file)
     moocs_json = moocs_str(moocs_json)
-    moocs_json = normalize(moocs_json,path2)
+    moocs_json = normalize(moocs_json)
     with open(path2 + '\json_norm\moocs_norm.json', 'w') as f3:
         f3.write(moocs_json)
         f3.close()
 
-
 def main():
     cf()
     moocs()
-
 
 if __name__ == '__main__':
     main()
