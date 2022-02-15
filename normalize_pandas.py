@@ -56,8 +56,6 @@ def depunctuation(entry):
     return "".join(
         [char for char in entry if char not in string.punctuation])
 
-
-
 def normalize_row(row, porter, stop_words):
     row = (row.apply(depunctuation)).apply(word_tokenize)
     row.apply(lambda words: ' '.join(
