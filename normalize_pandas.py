@@ -66,9 +66,8 @@ def lemmatize_text(text):
 
 def normalize_row(row, porter, stop_words):# In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
     row = (row.apply(depunctuation)).apply(word_tokenize)
-    row.apply(lambda words: ' '.join(
-        word for word in words if word not in stop_words))
     row = row.apply(lambda x: [porter.stem(y) for y in x])  # Stem every word.
+    row = row.apply(lambda words: [word for word in words if word not in stop_words])
     row = row.apply(lemmatize_text)
     return row
 
@@ -134,7 +133,7 @@ def moocs():
 
 
 def main():
-    #cf()
+    cf()
     moocs()
 
 
