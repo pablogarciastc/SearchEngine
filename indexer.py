@@ -1,4 +1,8 @@
+#!/usr/bin/python
+
+
 import json
+import sys,getopt
 import pandas as pd
 import glob
 import string
@@ -191,11 +195,25 @@ def moocs():
     # parsed = json.dumps(parsed, indent=4)
     moocs_index(result)
 
+def get_arg(argv):
+   corpus = ''
+   try:
+      opts,args = getopt.getopt(argv,"c:",["corpus="])
+   except getopt.GetoptError:
+      print('Should be indexer.py -c <corpus>')
+      sys.exit(2)
+   for opt, arg in opts:
+      if opt in ("-c", "--corpus"):
+         corpus = arg
+   return corpus
 
-def main():
-    cf()
-    moocs()
+def main(argv):
+    corpus = get_arg(argv)
+    if corpus == "cf":
+        cf()
+    if corpus == "moocs":
+        moocs()
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
