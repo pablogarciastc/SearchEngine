@@ -1,0 +1,5 @@
+indices/moocs.json
+indices/cf.json
+corpora/moocs/json/json_norm/moocs_norm_pandas.json
+corpora/moocs/json/moocs.json
+pruebas.py
