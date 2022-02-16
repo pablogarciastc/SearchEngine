@@ -2,7 +2,8 @@
 
 
 import json
-import sys,getopt
+import sys
+import getopt
 import pandas as pd
 import glob
 import string
@@ -12,8 +13,7 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
-
+import time
 
 
 def delete_fields_cf(df):  # deleting unnecesary fields
@@ -64,18 +64,20 @@ def depunctuation(entry):
     return "".join(
         [char for char in entry if char not in string.punctuation])
 
+
 def lemmatize_text(text):
     lemmatizer = WordNetLemmatizer()
     return [lemmatizer.lemmatize(w) for w in text]
 
 
-def normalize_row(row, porter, stop_words):# In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
+# In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
+def normalize_row(row, porter, stop_words):
     row = (row.apply(depunctuation)).apply(word_tokenize)
     row = row.apply(lambda x: [porter.stem(y) for y in x])  # Stem every word.
-    row = row.apply(lambda words: [word for word in words if word not in stop_words])
+    row = row.apply(
+        lambda words: [word for word in words if word not in stop_words])
     row = row.apply(lemmatize_text)
     return row
-
 
 
 def normalize_fields(df):
@@ -102,110 +104,129 @@ def normalize(df):
     df = normalize_fields(df)
     return df
 
-def utf_chars(df):
-     df['description'] = df['description'].apply(lambda x: x.encode('ascii', 'ignore').decode('unicode_escape').strip())
-     df['title'] = df['title'].apply(lambda x: x.encode('ascii', 'ignore').decode('unicode_escape').strip())
-     return df
 
-def addToDict(papernum,value,key,dict):
+def utf_chars(df):
+    df['description'] = df['description'].apply(lambda x: x.encode(
+        'ascii', 'ignore').decode('unicode_escape').strip())
+    df['title'] = df['title'].apply(lambda x: x.encode(
+        'ascii', 'ignore').decode('unicode_escape').strip())
+    return df
+
+
+def addToDict(papernum, value, key, dict):
     if type(value) is list:
         for item in value:
             if item in dict:
-                if dict[item][len(dict[item])-1]==key and dict[item][len(dict[item])-3]==str(papernum):
-                    dict[item][len(dict[item])-2]=str(int(dict[item][len(dict[item])-2])+1)
+                if dict[item][len(dict[item])-1] == key and dict[item][len(dict[item])-3] == str(papernum):
+                    dict[item][len(dict[item]) -
+                               2] = str(int(dict[item][len(dict[item])-2])+1)
                 else:
-                    dict[item] =dict[item]+[str(papernum),'1',key]
+                    dict[item] = dict[item]+[str(papernum), '1', key]
             if item not in dict:
-                dict[item] = [str(papernum),'1',key]
+                dict[item] = [str(papernum), '1', key]
     return dict
 
-def common(this_json,paper):
-    dict={}
+
+def common(this_json, paper):
+    dict = {}
     for item in this_json:
-        papernum=item[paper]
+        papernum = item[paper]
         for key, value in item.items():
-            if key=='title' or key=='abstract/extract' or key=='majorsubjects' or key=='minorsubjects' or key=='description':
-                dict=addToDict(papernum,value,key,dict)
+            if key == 'title' or key == 'abstract/extract' or key == 'majorsubjects' or key == 'minorsubjects' or key == 'description':
+                dict = addToDict(papernum, value, key, dict)
     return dict
+
 
 def postInd(dict):
-    out_json={}
+    out_json = {}
     for item in dict:
-        i=1
-        docs=[]
+        i = 1
+        docs = []
         for value in dict[item]:
-            if i==1:
-                id=str(value)
-            elif i==2: 
-                reps=str(value)
+            if i == 1:
+                id = str(value)
+            elif i == 2:
+                reps = str(value)
             else:
-                part=str(value)
-                this_docs={}
-                this_docs['id']=str(id)
-                this_docs['reps']=str(reps)
-                this_docs['part']=str(part)
+                part = str(value)
+                this_docs = {}
+                this_docs['id'] = str(id)
+                this_docs['reps'] = str(reps)
+                this_docs['part'] = str(part)
                 docs.append(this_docs)
-                i=0
-            i=i+1
-        this_word={}
-        this_word['idf']=str(len(docs))
-        this_word['docs']=docs
-        out_json[item]=this_word
+                i = 0
+            i = i+1
+        this_word = {}
+        this_word['idf'] = str(len(docs))
+        this_word['docs'] = docs
+        out_json[item] = this_word
     return out_json
 
+
 def cf_index(parsed):
-    dict=common(parsed,'paperNum')   
-    cf_index=postInd(dict)
+    dict = common(parsed, 'paperNum')
+    cf_index = postInd(dict)
     with open('.\indices\cf.json', 'w') as f3:
         f3.write(str(cf_index))
         f3.close()
 
 
-def moocs_index(parsed): 
-    dict=common(parsed,'courseID')    
-    cf_index=postInd(dict)
+def moocs_index(parsed):
+    dict = common(parsed, 'courseID')
+    cf_index = postInd(dict)
     with open('.\indices\moocs.json', 'w') as f3:
         f3.write(str(cf_index))
         f3.close()
 
+
 def cf():
     path1 = '.\corpora\cf\json'
     cf_json = cf_combiner(path1)
+    startTime = time.time()
     df_cf = pd.json_normalize(cf_json)
     df_cf = delete_fields_cf(df_cf)
     df_cf = normalize(df_cf)
+    print("Normalization took " + str(time.time()-startTime) + " segs")
     result = df_cf.to_json(orient="records")
     result = json.loads(result)
     # parsed = json.loads(result)
     # parsed = json.dumps(parsed, indent=4)
+    startTime = time.time()
     cf_index(result)
+    print("Indexation took " + str(time.time()-startTime) + " segs")
 
 
 def moocs():
     path2 = '.\corpora\moocs\json'
     with open(path2+'\moocs.json') as f:
         moocs_json = json.loads(f.read())
+    startTime = time.time()
     df_moocs = pd.json_normalize(moocs_json)
     df_moocs = delete_fields_moocs(df_moocs)
     df_moocs = utf_chars(df_moocs)
     df_moocs = normalize(df_moocs)
+    print("Normalization took " + str(time.time()-startTime) + " segs")
     result = df_moocs.to_json(orient="records")
     result = json.loads(result)
     # parsed = json.loads(result)
     # parsed = json.dumps(parsed, indent=4)
+    startTime = time.time()
     moocs_index(result)
+    print("Indexation took " + str(time.time()-startTime) + " segs")
+
 
 def get_arg(argv):
-   corpus = ''
-   try:
-      opts,args = getopt.getopt(argv,"c:",["corpus="])
-   except getopt.GetoptError:
-      print('Should be indexer.py -c <corpus>')
-      sys.exit(2)
-   for opt, arg in opts:
-      if opt in ("-c", "--corpus"):
-         corpus = arg
-   return corpus
+    corpus = ''
+    try:
+        opts, args = getopt.getopt(argv, "c:", ["corpus="])
+    except getopt.GetoptError:
+        print('Should be indexer.py -c <corpus>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-c", "--corpus"):
+            corpus = arg
+    return corpus
+
 
 def main(argv):
     corpus = get_arg(argv)
