@@ -8,9 +8,9 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
-
-
+from datetime import datetime
+import sys
+import math
 
 def delete_fields_cf(df):  # deleting unnecesary fields
     del df["recordNum"]
@@ -21,11 +21,9 @@ def delete_fields_cf(df):  # deleting unnecesary fields
     del df["citations"]
     return df
 
-
 def delete_fields_moocs(df):  # deleting unnecesary fields
     del df['url']
     return df
-
 
 def lists_to_str(entry):
     if 'majorSubjects' in entry:
@@ -35,7 +33,6 @@ def lists_to_str(entry):
         entry["minorSubjects"] = " ".join(str(x)
                                           for x in entry["minorSubjects"])
     return entry
-
 
 def cf_combiner(path1):  # combine several json files to 1
     combined = "["
@@ -51,10 +48,8 @@ def cf_combiner(path1):  # combine several json files to 1
     combined += "]"
     return json.loads(combined)
 
-
 def lowercase(df):
     return df.applymap(lambda s: s.lower() if type(s) == str else s)
-
 
 def depunctuation(entry):
     return "".join(
@@ -63,7 +58,6 @@ def depunctuation(entry):
 def lemmatize_text(text):
     lemmatizer = WordNetLemmatizer()
     return [lemmatizer.lemmatize(w) for w in text]
-
 
 def normalize_row(row, porter, stop_words):# In order each field is depunctuated, tokenizer, stopwords remover and stemmed)
     row = (row.apply(depunctuation)).apply(word_tokenize)
@@ -110,9 +104,9 @@ def addToDict(papernum,value,key,dict):
                 if dict[item][len(dict[item])-1]==key and dict[item][len(dict[item])-3]==str(papernum):
                     dict[item][len(dict[item])-2]=str(int(dict[item][len(dict[item])-2])+1)
                 else:
-                    dict[item] =dict[item]+[str(papernum),'1',key]
+                    dict[item] =dict[item]+[str(papernum),"1",key]
             if item not in dict:
-                dict[item] = [str(papernum),'1',key]
+                dict[item] = [str(papernum),"1",key]
     return dict
 
 def common(this_json,paper):
@@ -120,13 +114,14 @@ def common(this_json,paper):
     for item in this_json:
         papernum=item[paper]
         for key, value in item.items():
-            if key=='title' or key=='abstract/extract' or key=='majorsubjects' or key=='minorsubjects' or key=='description':
+            if key=='title' or key=='abstract/extract' or key=='majorSubjects' or key=='minorSubjects' or key=='description':
                 dict=addToDict(papernum,value,key,dict)
     return dict
 
-def postInd(dict):
+def postInd(dict,lenCorpus):
     out_json={}
     for item in dict:
+        idDocs={}
         i=1
         docs=[]
         for value in dict[item]:
@@ -137,44 +132,46 @@ def postInd(dict):
             else:
                 part=str(value)
                 this_docs={}
-                this_docs['id']=str(id)
-                this_docs['reps']=str(reps)
-                this_docs['part']=str(part)
+                this_docs["id"]=str(id)
+                if str(id) not in dict:
+                    print(str(id))
+                    idDocs[str(id)]=0
+                this_docs["reps"]=str(reps)
+                this_docs["part"]=str(part)
                 docs.append(this_docs)
                 i=0
             i=i+1
         this_word={}
-        this_word['idf']=str(len(docs))
-        this_word['docs']=docs
+        this_word["idf"]=str(math.log((lenCorpus+1)/len(idDocs),10))
+        this_word["docs"]=docs
         out_json[item]=this_word
     return out_json
 
-def cf_index(parsed):
-    dict=common(parsed,'paperNum')   
-    cf_index=postInd(dict)
+def cf_index(parsed,lenCorpus):
+    dict=common(parsed,"paperNum")   
+    cf_index=postInd(dict,lenCorpus)
     with open('.\indices\cf.json', 'w') as f3:
-        f3.write(str(cf_index))
+        f3.write(json.dumps(cf_index))
         f3.close()
 
 
-def moocs_index(parsed): 
-    dict=common(parsed,'courseID')    
-    cf_index=postInd(dict)
+def moocs_index(parsed,lenCorpus): 
+    dict=common(parsed,"courseID")    
+    moocs_index=postInd(dict,lenCorpus)
     with open('.\indices\moocs.json', 'w') as f3:
-        f3.write(str(cf_index))
+        f3.write(json.dumps(moocs_index))
         f3.close()
 
 def cf():
     path1 = '.\corpora\cf\json'
     cf_json = cf_combiner(path1)
+    docs_cf=len(cf_json)
     df_cf = pd.json_normalize(cf_json)
     df_cf = delete_fields_cf(df_cf)
     df_cf = normalize(df_cf)
     result = df_cf.to_json(orient="records")
     result = json.loads(result)
-    # parsed = json.loads(result)
-    # parsed = json.dumps(parsed, indent=4)
-    cf_index(result)
+    cf_index(result,docs_cf)
 
 
 def moocs():
@@ -182,20 +179,39 @@ def moocs():
     with open(path2+'\moocs.json') as f:
         moocs_json = json.loads(f.read())
     df_moocs = pd.json_normalize(moocs_json)
+    docs_moocs=len(df_moocs)
     df_moocs = delete_fields_moocs(df_moocs)
     df_moocs = utf_chars(df_moocs)
     df_moocs = normalize(df_moocs)
     result = df_moocs.to_json(orient="records")
     result = json.loads(result)
-    # parsed = json.loads(result)
-    # parsed = json.dumps(parsed, indent=4)
-    moocs_index(result)
+    moocs_index(result,docs_moocs)
 
 
-def main():
-    cf()
-    moocs()
-
+def main():    
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("INIT=", current_time)
+    if len(sys.argv) > 2 and sys.argv[1]=="-c":
+        if sys.argv[2]=="cf":
+            cf()
+        elif sys.argv[2]=="moocs":
+            moocs()
+        else:
+            print("PARAMETROS INCORRECTOS")
+            exit()
+    elif len(sys.argv)==2 and sys.argv[1]=="-c":
+        cf()
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("CF-MOOCS=", current_time)
+        moocs()
+    else:
+        print("PARAMETROS INCORRECTOS")
+        exit()
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("FINISH=", current_time)
 
 if __name__ == '__main__':
     main()
