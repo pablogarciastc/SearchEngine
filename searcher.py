@@ -48,48 +48,73 @@ def normalize(df):
     df = normalize_fields(df)
     return df
 
-def tf_ind(doc):
-    #falta el divisor !!!!!
+def tf_ind(doc,spec_doc,generic_docs):
+    ponderador=(1-variables.BC_TITLE)+variables.BC_TITLE*(spec_doc[doc['part']]/generic_docs[doc['part']])
     if doc['part']=="title":
-        return variables.WEIGHT_TITLE*doc['reps']
+        return variables.WEIGHT_TITLE*int(doc['reps'])/ponderador
     elif doc['part']=="abstract/extract":
-        return variables.WEIGHT_ABSTRACT*doc['reps']
+        return variables.WEIGHT_ABSTRACT*int(doc['reps'])/ponderador
     elif doc['part']=="majorSubjects":
-        return variables.WEIGHT_MAJOR*doc['reps']
+        return variables.WEIGHT_MAJOR*int(doc['reps'])/ponderador
     elif doc['part']=="minorSubjects":
-        return variables.WEIGHT_MINOR*doc['reps']
+        return variables.WEIGHT_MINOR*int(doc['reps'])/ponderador
     elif doc['part']=="description":
-        return variables.WEIGHT_DESCRIP*doc['reps']
+        return variables.WEIGHT_DESCRIP*int(doc['reps'])/ponderador
     else:
         return 0
 
-def tf(item,item_json,tf_cf):
-    tf_docs={} #{"doc1":{"tf":"tf1"},"doc2":{"tf":"tf2"}}
+def bm25f(item,item_json,tf_json,lens_json,idf,bm25f_json):
+    tf_docs={} #{"doc1":"tf1","doc2":"tf2"}
+    bm25f_docs={}
     for doc in item_json['docs']:
         this_tf={}
         if doc['id'] not in tf_docs:
-            tf_docs[doc['id']]=tf_ind(doc)
+            tf_docs[doc['id']]=tf_ind(doc,lens_json[doc['id']],lens_json['generic'])
         else:
-            tf_docs[doc['id']]=tf_docs[doc['id']]+tf_ind(doc)
-    tf_cf[item]=tf_docs
-    return tf_cf
+            tf_docs[doc['id']]=tf_docs[doc['id']]+tf_ind(doc,lens_json[doc['id']],lens_json['generic'])
+    tf_json[item]=tf_docs
+    for doc in tf_docs:
+        bm25f_docs[doc]=((variables.K+1)*tf_docs[doc]*idf)/(tf_docs[doc]+variables.K)
+    bm25f_json[item]=bm25f_docs
+    return tf_json,bm25f_json
+
+def iterate_words(query,words_json,lens_json):
+    tf_json={}
+    bm25f_json={}
+    ranking={}
+    for ind in query.index:
+        if query['word'][ind][0] in words_json: 
+            if query['word'][ind][0] not in bm25f_json:
+                idf=float(words_json[query['word'][ind][0]]['idf'])
+                tf_json,bm25f_json=bm25f(query['word'][ind][0],words_json[query['word'][ind][0]],tf_json,lens_json,idf,bm25f_json)
+            for doc in bm25f_json[query['word'][ind][0]]:
+                if doc in ranking:
+                    ranking[doc]=ranking[doc]+bm25f_json[query['word'][ind][0]][doc]
+                else:
+                    ranking[doc]=bm25f_json[query['word'][ind][0]][doc]
+    
+    ranking_pd = pd.json_normalize(ranking).transpose()
+    ranking_pd = ranking_pd.sort_values(0,ascending=False)
+    return ranking_pd
 
 def cf(query):
-    tf_cf={}
-    bm25f_cf={}
-
     with open('.\indices\cf.json') as f:
         cf_json = json.loads(f.read())
-    for ind in query.index: #cada palabra
-        if query['word'][ind][0] in cf_json: 
-            tf_cf=tf(query['word'][ind][0],cf_json[query['word'][ind][0]],tf_cf)
-            print(tf_cf)
-            idf=cf_json[query['word'][ind][0]]['idf']
-            #hacer aqui el bm25f
+    
+    with open('.\indices\cf_lens.json') as f:
+        cf_lens_json = json.loads(f.read())
+
+    return iterate_words(query,cf_json,cf_lens_json)
+    
     
 def moocs(query):
     with open('.\indices\moocs.json') as f:
         moocs_json = json.loads(f.read())
+    
+    with open('.\indices\moocs_lens.json') as f:
+        moocs_lens_json = json.loads(f.read())
+
+    return iterate_words(query,moocs_json,moocs_lens_json)
 
 def processquery(query):
     df = pd.Series(query.split(),
@@ -100,6 +125,16 @@ def processquery(query):
     df=df[df['word'].astype(bool)] 
     return df
 
+def printResults(ranking):
+    print("The results are:")
+    i=1
+    for ind in ranking.index:
+        print(str(i)+". "+str(ind))
+        i=i+1
+        if i==10:
+            break
+    print("Number of relevant documents="+str(len(ranking)))
+
 def main():    
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
@@ -107,20 +142,22 @@ def main():
     if len(sys.argv) ==5 and sys.argv[1]=="-c" and sys.argv[3]=="-q":
         if sys.argv[2]=="cf":
             query=processquery(sys.argv[4])
-            cf(query)
+            printResults(cf(query))
         elif sys.argv[2]=="moocs":
             query=processquery(sys.argv[4])
-            moocs(query)
+            printResults(moocs(query))
         else:
             print("PARAMETROS INCORRECTOS")
             exit()
     elif len(sys.argv)==4 and sys.argv[1]=="-c" and sys.argv[2]=="-q":
+        ##HACER PARTE CONJUNTA
         query=processquery(sys.argv[3])
         cf(query)
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         print("CF-MOOCS=", current_time)
         moocs(query)
+    ##HACER PASO DE QUERIES POR FICHERO
     else:
         print("PARAMETROS INCORRECTOS")
         exit()
