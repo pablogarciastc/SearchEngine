@@ -193,7 +193,7 @@ def metrics(ref_docs, teach_docs, our_docs):
     teach_at_5 = teach_at_5/len(teach_docs)
     #our_at_5 = our_at_5/len(teach_docs)
     write_file("\nTeacher's precision at 5: " + str(teach_at_5))
-    Revisar que este valor da demasiado bajo
+    #Revisar que este valor da demasiado bajo
 
 
 
