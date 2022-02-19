@@ -1,0 +1,3 @@
+Teacher's average precision: 0.25087727857207787
+Teacher's average recall: 0.0018181818181818182
+Teacher's F1 Score: 0.0036101994534466853

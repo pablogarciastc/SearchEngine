@@ -12,10 +12,7 @@ from indexer import moocs
 
 
 def compare_metrics():  # comparar nuestro rendimiento contra el suyo
-    print("OUR precision:")
-    print("TEACHER precision: ")
-    print("OUR recall: ")
-    print("TEACHER recall: ")
+    a = 1
     # etc
 
 
@@ -27,13 +24,13 @@ def load_docs(arg):
     with open(path+corpus+path2) as f:
         ref_docs = json.loads(f.read())
     # OURS
-    #with open() as f:
+    # with open() as f:
     #    our_docs = json.loads(f.read())
     our_docs = None
     # TEACHER
     with open('.\TFIDF_reference_results'+corpus+'_ref_qresults.json') as f:
         teach_docs = json.loads(f.read())
-    return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs) , our_docs
+    return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs), our_docs
 
 
 def get_args():
@@ -63,6 +60,10 @@ def normalize_precision(precision, recall):  # normalizar a Standard 11-level
     return normPrec
 
 
+def f_beta(avgPrec, avgRec, beta):
+    return (beta**2+1)*(avgPrec*avgRec)/(beta**2*avgPrec+avgRec)
+
+
 def prec_rec(relDocs, compDocs):  # los objetivamente relevantes y los a comparar
     precision = []
     recall = []
@@ -78,12 +79,65 @@ def prec_rec(relDocs, compDocs):  # los objetivamente relevantes y los a compara
     precision = normalize_precision(precision, recall)
     return precision
 
-def MAP():
-    print("")
+
+def MAP_vector(relDocs, compDocs):
+    precision = []
+    recall = []
+    hits = 0
+    for i in range(len(compDocs)):
+        if compDocs[i] in relDocs:
+            hits += 1
+        prec = hits/(i+1)
+        precision.append(prec)
+    return precision
 
 
-def metrics(ref_docs, teach_docs,our_docs):
+def MAP(vPrecision):
+    '''input: todos los vectores con las precisiones en cada instante, output:el valor AP'''
+    totalAP = 0
+    for i in range(len(vPrecision)):
+        ap = 0
+        if vPrecision[i]:
+            for k in range(len(vPrecision[i])):
+                if k == 0:
+                    ap = ap + vPrecision[i][k]
+                else:
+                    if vPrecision[i][k - 1] == vPrecision[i][k]:
+                        continue
+                    else:
+                        ap = ap + vPrecision[i][k]
+            ap = ap / len(vPrecision[i])
+        totalAP = totalAP + ap
+    totalAP = totalAP / len(vPrecision)
+    return totalAP
+
+
+def avg_prec_rec(relDocs, compDocs):
+    hits = 0
+    for i in range(len(compDocs)):
+        if compDocs[i] in relDocs:
+            hits += 1
+    prec = hits/len(compDocs)
+    rec = hits/len(relDocs)
+    return prec, rec
+
+
+def write_file(txt):
+    f = open("metrics.txt", "a")
+    f.write(txt)
+    f.close()
+
+
+def metrics(ref_docs, teach_docs, our_docs):
     vTeachPrec = []
+    vOurPrec = []
+    vTeachMAP = []
+    vOurMAP = []
+    ''' estas variables acumulan las precisiones y recalls para poder hacer su promedio'''
+    teach_overall_prec = 0
+    teach_overall_rec = 0
+    our_overall_prec = 0
+    our_overall_rec = 0
     for index in ref_docs.index:
         # lista con los documentos relevantes para una query
         relDocs = ref_docs["relevantDocs"][index]
@@ -92,16 +146,44 @@ def metrics(ref_docs, teach_docs,our_docs):
         '''Precision-Recall Normalizado'''
         teachPrec = prec_rec(relDocs, teachDocs)
         vTeachPrec.append(teachPrec)
-        #ourPrec = prec_rec(relDocs, OurDocs)
-        #vOurPrec.append(OurPrec)
-    '''MAP- Mean Average Precision'''
-    #oursMAP = MAP(vOurPrec)
-    teachMAP = MAP(vTeachPrec)
+        #ourPrec = prec_rec(relDocs, ourDocs)
+        # vOurPrec.append(OurPrec)
+        '''MAP- Mean Average Precision'''
+        #ourMAP = MAP_vector(relDocs,ourDocs)
+        # vOurMAP.append(ourMAP)
+        teachMAP = MAP_vector(relDocs, teachDocs)
+        vTeachMAP.append(teachMAP)
+        '''Valores totales de recall y precision para Fmeasure'''
+        #our_avg_prec,our_avg_rec = avg_prec_rec(relDocs,ourDocs)
+        #our_overall_prec = our_overall_prec+our_avg_prec
+        #our_overall_rec = our_overall_rec+our_avg_rec
+        teach_avg_prec, teach_avg_rec = avg_prec_rec(relDocs, teachDocs)
+        teach_overall_prec = teach_overall_prec+teach_avg_prec
+        teach_overall_rec = teach_overall_rec+teach_avg_rec
+    '''MAP'''
+    teachAP = MAP(vTeachMAP)
+    #ourAP = MAP(vOurMAP)
+
+    '''Valores promedio de recall y precision para Fmeasure'''
+    teach_avg_prec = teach_overall_prec/len(teach_docs)
+    teach_avg_rec = teach_avg_rec/len(teach_docs)
+    write_file("Teacher's average precision: " + str(teach_avg_prec) +
+               "\nTeacher's average recall: " + str(teach_avg_rec))
+    #our_avg_prec= our_avg_rec/len(our_docs)
+    #our_avg_rec= our_avg_rec/len(our_docs)
+    '''F1'''
+    #our_F1 = f_beta(our_avg_prec,our_avg_rec)
+    teach_F1 = f_beta(teach_avg_prec, teach_avg_rec, 1)
+    write_file("\nTeacher's F1 Score: " + str(teach_F1))
+
 
 def main():
+    f = open("metrics.txt", "w")
+    f.write("")
+    f.close()
     args = get_args()
-    ref_docs, teach_docs,our_docs = load_docs(args)
-    metrics(ref_docs, teach_docs,our_docs)
+    ref_docs, teach_docs, our_docs = load_docs(args)
+    metrics(ref_docs, teach_docs, our_docs)
     compare_metrics()
 
 
