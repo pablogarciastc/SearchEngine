@@ -82,7 +82,6 @@ def prec_rec(relDocs, compDocs):  # los objetivamente relevantes y los a compara
 
 def MAP_vector(relDocs, compDocs):
     precision = []
-    recall = []
     hits = 0
     for i in range(len(compDocs)):
         if compDocs[i] in relDocs:
@@ -92,24 +91,19 @@ def MAP_vector(relDocs, compDocs):
     return precision
 
 
-def MAP(vPrecision):
+def MAP(vPrecision, refDocs):
     '''input: todos los vectores con las precisiones en cada instante, output:el valor AP'''
     totalAP = 0
     for i in range(len(vPrecision)):
-        ap = 0
+        queryAP = 0
         if vPrecision[i]:
             for k in range(len(vPrecision[i])):
-                if k == 0:
-                    ap = ap + vPrecision[i][k]
-                else:
-                    if vPrecision[i][k - 1] == vPrecision[i][k]:
-                        continue
-                    else:
-                        ap = ap + vPrecision[i][k]
-            ap = ap / len(vPrecision[i])
-        totalAP = totalAP + ap
-    totalAP = totalAP / len(vPrecision)
-    return totalAP
+                queryAP = queryAP + vPrecision[i][k]
+            # divido entre el nº de docs relevantes de esa query
+            queryAP = queryAP / len(refDocs["relevantDocs"][i])
+        totalAP = totalAP + queryAP
+    AP = totalAP / len(vPrecision)
+    return AP
 
 
 def avg_prec_rec(relDocs, compDocs):
@@ -128,6 +122,19 @@ def write_file(txt):
     f.close()
 
 
+def p_at_n(relDocs,compDocs,n):
+    hits = 0
+    if len(compDocs)<n:
+        n=len(compDocs)
+    for i in range(n):
+        if compDocs[i] in relDocs:
+            hits += 1
+    prec = hits/n
+    return prec
+    
+    
+
+
 def metrics(ref_docs, teach_docs, our_docs):
     vTeachPrec = []
     vOurPrec = []
@@ -138,6 +145,8 @@ def metrics(ref_docs, teach_docs, our_docs):
     teach_overall_rec = 0
     our_overall_prec = 0
     our_overall_rec = 0
+    teachAt5 = 0
+    ourAt6= 0 
     for index in ref_docs.index:
         # lista con los documentos relevantes para una query
         relDocs = ref_docs["relevantDocs"][index]
@@ -153,6 +162,10 @@ def metrics(ref_docs, teach_docs, our_docs):
         # vOurMAP.append(ourMAP)
         teachMAP = MAP_vector(relDocs, teachDocs)
         vTeachMAP.append(teachMAP)
+        '''p at N'''
+        teach_at_5 = p_at_n(relDocs,teachDocs,5)
+        teachAt5 = teachAt5 + teach_at_5
+        #our_at_5 = p_at_n(relDocs,ourDocs,5)
         '''Valores totales de recall y precision para Fmeasure'''
         #our_avg_prec,our_avg_rec = avg_prec_rec(relDocs,ourDocs)
         #our_overall_prec = our_overall_prec+our_avg_prec
@@ -160,9 +173,6 @@ def metrics(ref_docs, teach_docs, our_docs):
         teach_avg_prec, teach_avg_rec = avg_prec_rec(relDocs, teachDocs)
         teach_overall_prec = teach_overall_prec+teach_avg_prec
         teach_overall_rec = teach_overall_rec+teach_avg_rec
-    '''MAP'''
-    teachAP = MAP(vTeachMAP)
-    #ourAP = MAP(vOurMAP)
 
     '''Valores promedio de recall y precision para Fmeasure'''
     teach_avg_prec = teach_overall_prec/len(teach_docs)
@@ -175,6 +185,17 @@ def metrics(ref_docs, teach_docs, our_docs):
     #our_F1 = f_beta(our_avg_prec,our_avg_rec)
     teach_F1 = f_beta(teach_avg_prec, teach_avg_rec, 1)
     write_file("\nTeacher's F1 Score: " + str(teach_F1))
+    '''MAP'''
+    teachAP = MAP(vTeachMAP, ref_docs)
+    #ourAP = MAP(vOurMAP)
+    write_file("\nTeacher's MAP: " + str(teachAP))
+    '''p at n'''
+    teach_at_5 = teach_at_5/len(teach_docs)
+    #our_at_5 = our_at_5/len(teach_docs)
+    write_file("\nTeacher's precision at 5: " + str(teach_at_5))
+    Revisar que este valor da demasiado bajo
+
+
 
 
 def main():
