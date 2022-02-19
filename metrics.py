@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from indexer import moocs
-from metricas import mAP
 
 
 def compare_metrics():  # comparar nuestro rendimiento contra el suyo
