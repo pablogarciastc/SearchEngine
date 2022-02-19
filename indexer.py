@@ -221,7 +221,6 @@ def moocs():
     path2 = '.\corpora\moocs\json'
     with open(path2+'\moocs.json') as f:
         moocs_json = json.loads(f.read())
-    startTime = time.time()
     df_moocs = pd.json_normalize(moocs_json)
     docs_moocs=len(df_moocs)
     df_moocs = delete_fields_moocs(df_moocs)
@@ -280,4 +279,4 @@ def main():
     print("FINISH=", current_time)
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
