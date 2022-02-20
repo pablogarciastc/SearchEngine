@@ -1,6 +1,4 @@
 #!/usr/bin/python
-
-
 import json
 import sys
 import getopt
@@ -18,7 +16,7 @@ import sys
 import math
 
 def delete_fields_cf(df):  # deleting unnecesary fields
-    del df["recordNum"]
+    del df["paperNum"]
     del df["acessionNum"]
     del df["authors"]
     del df["source"]
@@ -159,7 +157,7 @@ def postInd(dict,lenCorpus):
     return out_json
 
 def cf_index(parsed,lenCorpus):
-    dict=common(parsed,"paperNum")   
+    dict=common(parsed,"recordNum")   
     cf_index=postInd(dict,lenCorpus)
     with open('.\indices\cf.json', 'w') as f3:
         f3.write(json.dumps(cf_index))
@@ -172,7 +170,6 @@ def moocs_index(parsed,lenCorpus):
     with open('.\indices\moocs.json', 'w') as f3:
         f3.write(json.dumps(moocs_index))
         f3.close()
-
 
 def cf():
     path1 = '.\corpora\cf\json'
@@ -195,7 +192,7 @@ def cf():
         info_section['majorSubjects']=len(df_cf['majorSubjects'][ind])
         info_section['minorSubjects']=len(df_cf['minorSubjects'][ind])
         info_section['title']=len(df_cf['title'][ind])
-        info_doc[str(df_cf['paperNum'][ind])]=info_section
+        info_doc[str(df_cf['recordNum'][ind])]=info_section
 
         info_generic['title']=info_generic['title']+info_section['title']
         info_generic['majorSubjects']=info_generic['majorSubjects']+info_section['majorSubjects']
@@ -254,25 +251,20 @@ def moocs():
 
 
 def main():    
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    print("INIT=", current_time)
-    if len(sys.argv) > 2 and sys.argv[1]=="-c":
-        if sys.argv[2]=="cf":
-            cf()
-        elif sys.argv[2]=="moocs":
-            moocs()
-        else:
-            print("PARAMETROS INCORRECTOS")
-            exit()
-    elif len(sys.argv)==2 and sys.argv[1]=="-c":
-        cf()
+    if len(sys.argv) == 3 and sys.argv[1]=="-c":
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
-        print("CF-MOOCS=", current_time)
-        moocs()
+        if sys.argv[2]=="cf":
+            print("INIT=", current_time)
+            cf()
+        elif sys.argv[2]=="moocs":
+            print("INIT=", current_time)
+            moocs()
+        else:
+            print("INCORRECT PARAMETERS")
+            exit()
     else:
-        print("PARAMETROS INCORRECTOS")
+        print("INCORRECT PARAMETERS")
         exit()
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")

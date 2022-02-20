@@ -125,15 +125,57 @@ def processquery(query):
     df=df[df['word'].astype(bool)] 
     return df
 
-def printResults(ranking):
-    print("The results are:")
+def printResults(ranking,corpus):
+    print("The results for the "+corpus+" dataset is:")
     i=1
     for ind in ranking.index:
         print(str(i)+". "+str(ind))
         i=i+1
         if i==10:
             break
-    print("Number of relevant documents="+str(len(ranking)))
+    print("Number of relevant documents in "+corpus+"="+str(len(ranking)))
+
+def cf_queries_file(queries_json,file):
+    final_file=[]
+    for item in queries_json:
+        results=[]
+        this_query={}
+        query=processquery(item['queryText'])
+        i=1
+        ranking=cf(query)
+        for ind in ranking.index:
+            results.append(str(ind))
+            i=i+1
+            if i==10:
+                break
+        this_query["queryID"]=item['queryID']
+        this_query["relevantDocs"]=results
+        final_file.append(this_query)
+    
+    with open(file, 'w') as f3: #'.\corpora\cf\json\cf_results.json'
+        f3.write(json.dumps(final_file))
+        f3.close()
+
+def moocs_queries_file(queries_json,file):
+    final_file=[]
+    for item in queries_json:
+        results=[]
+        this_query={}
+        query=processquery(item['queryText'])
+        i=1
+        ranking=moocs(query)
+        for ind in ranking.index:
+            results.append(str(ind))
+            i=i+1
+            if i==10:
+                break
+        this_query["queryID"]=item['queryID']
+        this_query["relevantDocs"]=results
+        final_file.append(this_query)
+    
+    with open(file, 'w') as f3: #'.\corpora\moocs\json\moocs_results.json'
+        f3.write(json.dumps(final_file))
+        f3.close()
 
 def main():    
     now = datetime.now()
@@ -142,24 +184,41 @@ def main():
     if len(sys.argv) ==5 and sys.argv[1]=="-c" and sys.argv[3]=="-q":
         if sys.argv[2]=="cf":
             query=processquery(sys.argv[4])
-            printResults(cf(query))
+            printResults(cf(query),"cf")
         elif sys.argv[2]=="moocs":
             query=processquery(sys.argv[4])
-            printResults(moocs(query))
+            printResults(moocs(query),"moocs")
         else:
-            print("PARAMETROS INCORRECTOS")
+            print("INCORRECT PARAMETERS")
             exit()
-    elif len(sys.argv)==4 and sys.argv[1]=="-c" and sys.argv[2]=="-q":
-        ##HACER PARTE CONJUNTA
-        query=processquery(sys.argv[3])
-        cf(query)
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        print("CF-MOOCS=", current_time)
-        moocs(query)
-    ##HACER PASO DE QUERIES POR FICHERO
+    elif len(sys.argv) ==5 and sys.argv[1]=="-c" and sys.argv[3]=="-rf":
+        if sys.argv[2]=="cf":
+            with open('.\corpora\cf\json\queries.json') as f:
+                queries_json = json.loads(f.read())
+            cf_queries_file(queries_json,sys.argv[4])
+
+        elif sys.argv[2]=="moocs":
+            with open('.\corpora\moocs\json\queries.json') as f:
+                queries_json = json.loads(f.read())
+            moocs_queries_file(queries_json,sys.argv[4])
+        else:
+            print("INCORRECT PARAMETERS")
+            exit()
+    elif len(sys.argv) ==7 and sys.argv[1]=="-c" and sys.argv[3]=="-qf" and sys.argv[5]=="-rf":
+        if sys.argv[2]=="cf":
+            with open(sys.argv[4]) as f:
+                queries_json = json.loads(f.read())
+            cf_queries_file(queries_json,sys.argv[6])
+
+        elif sys.argv[2]=="moocs":
+            with open(sys.argv[4]) as f:
+                queries_json = json.loads(f.read())
+            moocs_queries_file(queries_json,sys.argv[6])
+        else:
+            print("INCORRECT PARAMETERS")
+            exit()
     else:
-        print("PARAMETROS INCORRECTOS")
+        print("INCORRECT PARAMETERS")
         exit()
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
