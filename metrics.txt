@@ -2,4 +2,6 @@ Teacher's average precision: 0.25087727857207787
 Teacher's average recall: 0.0018181818181818182
 Teacher's F1 Score: 0.0036101994534466853
 Teacher's MAP: 0.21622381112824388
-Teacher's precision at 5: 0.004
+Teacher's precision at 5: 0.33466666666666645
+Teacher's R-precision: 0.2618368922879292
+Teacher's MRR: 0.5764283216783217

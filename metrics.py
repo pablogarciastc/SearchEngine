@@ -7,7 +7,6 @@ from nltk.stem import PorterStemmer
 import math
 import numpy as np
 import pandas as pd
-
 from indexer import moocs
 
 
@@ -106,6 +105,23 @@ def MAP(vPrecision, refDocs):
     return AP
 
 
+def MRR(relDocs, compDocs):
+    aux = 1
+    for i in range(len(compDocs)):
+        if compDocs[i] in relDocs:
+            return (1/aux)
+        aux = aux+1
+    return 0
+
+
+'''Multilevel Relevance Evaluation'''
+
+
+def MRE(relDocs, compDocs):
+
+    return 1
+
+
 def avg_prec_rec(relDocs, compDocs):
     hits = 0
     for i in range(len(compDocs)):
@@ -122,17 +138,27 @@ def write_file(txt):
     f.close()
 
 
-def p_at_n(relDocs,compDocs,n):
+def p_at_n(relDocs, compDocs, n):
     hits = 0
-    if len(compDocs)<n:
-        n=len(compDocs)
+    if len(compDocs) < n:
+        n = len(compDocs)
     for i in range(n):
         if compDocs[i] in relDocs:
             hits += 1
     prec = hits/n
     return prec
-    
-    
+
+
+def rPrecision(relDocs, compDocs):
+    hits = 0
+    n = len(relDocs)
+    if len(compDocs) < n:
+        n = len(compDocs)
+    for i in range(n):
+        if compDocs[i] in relDocs:
+            hits += 1
+    prec = hits/n
+    return prec
 
 
 def metrics(ref_docs, teach_docs, our_docs):
@@ -146,7 +172,11 @@ def metrics(ref_docs, teach_docs, our_docs):
     our_overall_prec = 0
     our_overall_rec = 0
     teachAt5 = 0
-    ourAt6= 0 
+    ourAt5 = 0
+    teachRPrec = 0
+    ourRPrec = 0
+    teachMRR = 0
+    ourMRR = 0
     for index in ref_docs.index:
         # lista con los documentos relevantes para una query
         relDocs = ref_docs["relevantDocs"][index]
@@ -163,9 +193,14 @@ def metrics(ref_docs, teach_docs, our_docs):
         teachMAP = MAP_vector(relDocs, teachDocs)
         vTeachMAP.append(teachMAP)
         '''p at N'''
-        teach_at_5 = p_at_n(relDocs,teachDocs,5)
-        teachAt5 = teachAt5 + teach_at_5
+        teachAt5 = teachAt5 + p_at_n(relDocs, teachDocs, 5)
         #our_at_5 = p_at_n(relDocs,ourDocs,5)
+        '''r-Precision'''
+        teachRPrec = teachRPrec + rPrecision(relDocs, teachDocs)
+        '''MRR'''
+        teachMRR = teachMRR + MRR(relDocs, teachDocs)
+        '''MRE'''
+        teachMRE = MRE(relDocs,teachDocs) #en proceso hahahaha
         '''Valores totales de recall y precision para Fmeasure'''
         #our_avg_prec,our_avg_rec = avg_prec_rec(relDocs,ourDocs)
         #our_overall_prec = our_overall_prec+our_avg_prec
@@ -183,19 +218,19 @@ def metrics(ref_docs, teach_docs, our_docs):
     #our_avg_rec= our_avg_rec/len(our_docs)
     '''F1'''
     #our_F1 = f_beta(our_avg_prec,our_avg_rec)
-    teach_F1 = f_beta(teach_avg_prec, teach_avg_rec, 1)
-    write_file("\nTeacher's F1 Score: " + str(teach_F1))
+    write_file("\nTeacher's F1 Score: " +
+               str(f_beta(teach_avg_prec, teach_avg_rec, 1)))
     '''MAP'''
-    teachAP = MAP(vTeachMAP, ref_docs)
-    #ourAP = MAP(vOurMAP)
-    write_file("\nTeacher's MAP: " + str(teachAP))
+    write_file("\nTeacher's MAP: " + str(MAP(vTeachMAP, ref_docs)))
     '''p at n'''
-    teach_at_5 = teach_at_5/len(teach_docs)
-    #our_at_5 = our_at_5/len(teach_docs)
-    write_file("\nTeacher's precision at 5: " + str(teach_at_5))
-    #Revisar que este valor da demasiado bajo
+    write_file("\nTeacher's precision at 5: " + str(teachAt5/len(teach_docs)))
+    '''r-Precision'''
+    write_file("\nTeacher's R-precision: " + str(teachRPrec/len(teach_docs)))
+    '''MRR'''
+    write_file("\nTeacher's MRR: " + str(teachMRR/len(teach_docs)))
+    '''MRE'''
 
-
+    #our_rprec = ourRPrec/len(teach_docs)
 
 
 def main():
