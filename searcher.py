@@ -67,7 +67,6 @@ def bm25f(item,item_json,tf_json,lens_json,idf,bm25f_json):
     tf_docs={} #{"doc1":"tf1","doc2":"tf2"}
     bm25f_docs={}
     for doc in item_json['docs']:
-        this_tf={}
         if doc['id'] not in tf_docs:
             tf_docs[doc['id']]=tf_ind(doc,lens_json[doc['id']],lens_json['generic'])
         else:
