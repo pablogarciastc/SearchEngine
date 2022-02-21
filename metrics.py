@@ -1,32 +1,26 @@
 import json
 import argparse
-import string
-from nltk import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-import math
 import numpy as np
 import pandas as pd
-from indexer import moocs
+import plotly as plt
+import plotly.express as px
+import plotly.graph_objects as go
+import os
 
-
-def compare_metrics():  # comparar nuestro rendimiento contra el suyo
-    a = 1
-    # etc
 
 
 def load_docs(arg):
     path = '.\corpora'
     path2 = '\json\Results\qrels.json'
     corpus = '\\'+arg.c
-    # REF
+    '''REF'''
     with open(path+corpus+path2) as f:
         ref_docs = json.loads(f.read())
-    # OURS
+    '''OURS'''
     # with open() as f:
     #    our_docs = json.loads(f.read())
     our_docs = None
-    # TEACHER
+    '''TEACHER'''
     with open('.\TFIDF_reference_results'+corpus+'_ref_qresults.json') as f:
         teach_docs = json.loads(f.read())
     return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs), our_docs
@@ -34,8 +28,8 @@ def load_docs(arg):
 
 def get_args():
     parser = argparse.ArgumentParser(description='Paso de parámetros')
-    parser.add_argument("-c", dest="c")
-    parser.add_argument("-rf", dest="rf")
+    parser.add_argument("-c", dest="c")  # corpus
+    parser.add_argument("-rf", dest="rf")  # result-file path
     return parser.parse_args()
 
 
@@ -43,6 +37,8 @@ def normalize_precision(precision, recall):  # normalizar a Standard 11-level
     normRec = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
     normPrec = []
     aux = 0
+    if not precision:
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for i in range(len(normRec)):
         if aux != (len(recall) - 1):
             if i == 0:  # el primero siempre se almacena
@@ -124,6 +120,8 @@ def MRE(relDocs, compDocs):
 
 def avg_prec_rec(relDocs, compDocs):
     hits = 0
+    if len(compDocs) == 0:
+        return 0, 0
     for i in range(len(compDocs)):
         if compDocs[i] in relDocs:
             hits += 1
@@ -142,6 +140,8 @@ def p_at_n(relDocs, compDocs, n):
     hits = 0
     if len(compDocs) < n:
         n = len(compDocs)
+        if n == 0:
+            return 0
     for i in range(n):
         if compDocs[i] in relDocs:
             hits += 1
@@ -154,6 +154,8 @@ def rPrecision(relDocs, compDocs):
     n = len(relDocs)
     if len(compDocs) < n:
         n = len(compDocs)
+        if n == 0:
+            return 0
     for i in range(n):
         if compDocs[i] in relDocs:
             hits += 1
@@ -200,7 +202,7 @@ def metrics(ref_docs, teach_docs, our_docs):
         '''MRR'''
         teachMRR = teachMRR + MRR(relDocs, teachDocs)
         '''MRE'''
-        teachMRE = MRE(relDocs,teachDocs) #en proceso hahahaha
+        teachMRE = MRE(relDocs, teachDocs)  # en proceso hahahaha
         '''Valores totales de recall y precision para Fmeasure'''
         #our_avg_prec,our_avg_rec = avg_prec_rec(relDocs,ourDocs)
         #our_overall_prec = our_overall_prec+our_avg_prec
@@ -229,9 +231,20 @@ def metrics(ref_docs, teach_docs, our_docs):
     '''MRR'''
     write_file("\nTeacher's MRR: " + str(teachMRR/len(teach_docs)))
     '''MRE'''
+    
+    compare_metrics(teach_avg_prec)
 
     #our_rprec = ourRPrec/len(teach_docs)
 
+
+
+def compare_metrics(var1):  # comparar nuestro rendimiento contra el suyo
+    fig = go.Figure(
+    data=[go.Bar(y=[var1])],
+    layout_title_text="A Figure Displayed with fig.show()")
+    fig.write_image("images/fig1.png")
+
+    # etc
 
 def main():
     f = open("metrics.txt", "w")
@@ -240,8 +253,9 @@ def main():
     args = get_args()
     ref_docs, teach_docs, our_docs = load_docs(args)
     metrics(ref_docs, teach_docs, our_docs)
-    compare_metrics()
 
 
 if __name__ == '__main__':
+    if not os.path.exists("images"):
+        os.mkdir("images")
     main()
