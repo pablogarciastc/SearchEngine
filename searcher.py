@@ -1,6 +1,5 @@
 import json
 import pandas as pd
-import glob
 import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
@@ -10,9 +9,9 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from datetime import datetime
 import sys
-import io
 import numpy as np
 import variables
+import statistics
 
 
 def lowercase(df):
@@ -32,8 +31,6 @@ def normalize_row(row, porter, stop_words):# In order each field is depunctuated
     row = row.apply(lambda words: [word for word in words if word not in stop_words])
     row = row.apply(lemmatize_text)
     return row
-
-
 
 def normalize_fields(df):
     stop_words = stopwords.words('english')
@@ -67,7 +64,6 @@ def bm25f(item,item_json,tf_json,lens_json,idf,bm25f_json):
     tf_docs={} #{"doc1":"tf1","doc2":"tf2"}
     bm25f_docs={}
     for doc in item_json['docs']:
-        this_tf={}
         if doc['id'] not in tf_docs:
             tf_docs[doc['id']]=tf_ind(doc,lens_json[doc['id']],lens_json['generic'])
         else:
@@ -95,6 +91,7 @@ def iterate_words(query,words_json,lens_json):
     
     ranking_pd = pd.json_normalize(ranking).transpose()
     ranking_pd = ranking_pd.sort_values(0,ascending=False)
+    ranking_pd = ranking_pd.loc[ranking_pd[0] >= float("%.3f"%statistics.median(ranking_pd[0]))]
     return ranking_pd
 
 def cf(query):
@@ -141,13 +138,9 @@ def cf_queries_file(queries_json,file):
         results=[]
         this_query={}
         query=processquery(item['queryText'])
-        i=1
         ranking=cf(query)
         for ind in ranking.index:
-            results.append(str(ind))
-            i=i+1
-            if i==10:
-                break
+            results.append(int(ind))
         this_query["queryID"]=item['queryID']
         this_query["relevantDocs"]=results
         final_file.append(this_query)
@@ -157,18 +150,15 @@ def cf_queries_file(queries_json,file):
         f3.close()
 
 def moocs_queries_file(queries_json,file):
+    ''' input: output:'''
     final_file=[]
     for item in queries_json:
         results=[]
         this_query={}
         query=processquery(item['queryText'])
-        i=1
         ranking=moocs(query)
         for ind in ranking.index:
-            results.append(str(ind))
-            i=i+1
-            if i==10:
-                break
+            results.append(int(ind))
         this_query["queryID"]=item['queryID']
         this_query["relevantDocs"]=results
         final_file.append(this_query)

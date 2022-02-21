@@ -37,16 +37,24 @@ def lists_to_str(entry):
                                           for x in entry["minorSubjects"])
     return entry
 
+def combine(combined,json_file):
+    with open(json_file) as infile:
+        data = json.loads(infile.read())
+        for entry in data:
+            entry = lists_to_str(entry)
+            entry_str = json.dumps(entry, ensure_ascii=False)
+            combined += entry_str
+            combined += ",\n"
+    return combined
+
 def cf_combiner(path1):  # combine several json files to 1
     combined = "["
-    for json_file in glob.glob(path1 + '\*.json'):
-        with open(json_file) as infile:
-            data = json.loads(infile.read())
-            for entry in data:
-                entry = lists_to_str(entry)
-                entry_str = json.dumps(entry, ensure_ascii=False)
-                combined += entry_str
-                combined += ",\n"
+    combined = combine(combined,path1+"\cf74.json")
+    combined = combine(combined,path1+"\cf75.json")
+    combined = combine(combined,path1+"\cf76.json")
+    combined = combine(combined,path1+"\cf77.json")
+    combined = combine(combined,path1+"\cf78.json")
+    combined = combine(combined,path1+"\cf79.json")
     combined = combined[:-2]
     combined += "]"
     return json.loads(combined)
