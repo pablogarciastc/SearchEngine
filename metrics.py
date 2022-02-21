@@ -211,7 +211,7 @@ def metrics(ref_docs, teach_docs, our_docs):
 
     '''Valores promedio de recall y precision para Fmeasure'''
     teach_avg_prec = teach_overall_prec/len(teach_docs)
-    teach_avg_rec = teach_avg_rec/len(teach_docs)
+    teach_avg_rec = teach_overall_rec/len(teach_docs)
     write_file("Teacher's average precision: " + str(teach_avg_prec) +
                "\nTeacher's average recall: " + str(teach_avg_rec))
     #our_avg_prec= our_avg_rec/len(our_docs)
