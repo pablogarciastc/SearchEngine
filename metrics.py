@@ -11,7 +11,7 @@ import os
 
 def load_docs(arg):
     path = '.\corpora'
-    path2 = '\json\Results\qrels.json'
+    path2 = '\json\qrels.json'
     corpus = '\\'+arg.c
     '''REF'''
     with open(path+corpus+path2) as f:
