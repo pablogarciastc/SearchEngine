@@ -17,7 +17,7 @@ def compare_metrics():  # comparar nuestro rendimiento contra el suyo
 
 def load_docs(arg):
     path = '.\corpora'
-    path2 = '\json\Results\qrels.json'
+    path2 = '\json\qrels.json'
     corpus = '\\'+arg.c
     # REF
     with open(path+corpus+path2) as f:
@@ -231,7 +231,6 @@ def metrics(ref_docs, teach_docs, our_docs):
     '''MRE'''
 
     #our_rprec = ourRPrec/len(teach_docs)
-
 
 def main():
     f = open("metrics.txt", "w")
