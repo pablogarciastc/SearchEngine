@@ -214,7 +214,7 @@ def metrics(ref_docs, teach_docs, our_docs):
     teach_avg_rec = teach_overall_rec/len(teach_docs)
     write_file("Teacher's average precision: " + str(teach_avg_prec) +
                "\nTeacher's average recall: " + str(teach_avg_rec))
-    #our_avg_prec= our_avg_rec/len(our_docs)
+    #our_avg_prec= our_avg_prec/len(our_docs)
     #our_avg_rec= our_avg_rec/len(our_docs)
     '''F1'''
     #our_F1 = f_beta(our_avg_prec,our_avg_rec)

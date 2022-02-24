@@ -54,7 +54,7 @@ def F1(corpus,file):
         our_overall_rec = our_overall_rec+our_avg_rec
 
     '''Valores promedio de recall y precision para Fmeasure'''
-    our_avg_prec= our_avg_rec/len(our_docs)
+    our_avg_prec= our_avg_prec/len(our_docs)
     our_avg_rec= our_avg_rec/len(our_docs)
     '''F1'''
     return f_beta(our_avg_prec,our_avg_rec,1)

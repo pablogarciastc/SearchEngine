@@ -4,14 +4,12 @@ import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
-from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from datetime import datetime
 import sys
 import numpy as np
 import variables
-import statistics
 
 
 def lowercase(df):
