@@ -4,14 +4,12 @@ import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
-from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from datetime import datetime
 import sys
 import numpy as np
 import variables
-import statistics
 
 
 def lowercase(df):
@@ -91,7 +89,7 @@ def iterate_words(query,words_json,lens_json):
     
     ranking_pd = pd.json_normalize(ranking).transpose()
     ranking_pd = ranking_pd.sort_values(0,ascending=False)
-    ranking_pd = ranking_pd.loc[ranking_pd[0] >= float("%.3f"%statistics.median(ranking_pd[0]))]
+    ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > float(np.percentile(ranking_pd[0].to_numpy(), 70))]
     return ranking_pd
 
 def cf(query):
@@ -141,6 +139,8 @@ def cf_queries_file(queries_json,file):
         ranking=cf(query)
         for ind in ranking.index:
             results.append(int(ind))
+            if len(results)==50:
+                break
         this_query["queryID"]=item['queryID']
         this_query["relevantDocs"]=results
         final_file.append(this_query)
@@ -159,6 +159,8 @@ def moocs_queries_file(queries_json,file):
         ranking=moocs(query)
         for ind in ranking.index:
             results.append(int(ind))
+            if len(results)==50:
+                break
         this_query["queryID"]=item['queryID']
         this_query["relevantDocs"]=results
         final_file.append(this_query)

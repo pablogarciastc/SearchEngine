@@ -1,0 +1,402 @@
+[
+  {
+    "queryID": 0,
+    "queryText": "economics statistics"
+  },
+  {
+    "queryID": 1,
+    "queryText": "Statistical physics"
+  },
+  {
+    "queryID": 2,
+    "queryText": "chinese"
+  },
+  {
+    "queryID": 3,
+    "queryText": "efficient clustering of high dimensional datasets"
+  },
+  {
+    "queryID": 4,
+    "queryText": "elastic net regularization"
+  },
+  {
+    "queryID": 5,
+    "queryText": "distributed programming"
+  },
+  {
+    "queryID": 6,
+    "queryText": "sentiment analysis"
+  },
+  {
+    "queryID": 7,
+    "queryText": "Machine learning techniques"
+  },
+  {
+    "queryID": 8,
+    "queryText": "yoga: body and mind"
+  },
+  {
+    "queryID": 9,
+    "queryText": "text retrieval ans search engines announcements"
+  },
+  {
+    "queryID": 10,
+    "queryText": "database knowledge"
+  },
+  {
+    "queryID": 11,
+    "queryText": "cognitive neuroscience"
+  },
+  {
+    "queryID": 12,
+    "queryText": "tv"
+  },
+  {
+    "queryID": 13,
+    "queryText": "Macro Economics"
+  },
+  {
+    "queryID": 14,
+    "queryText": "MCMC simulation"
+  },
+  {
+    "queryID": 15,
+    "queryText": "hadoop beginner"
+  },
+  {
+    "queryID": 16,
+    "queryText": "innovations in data science"
+  },
+  {
+    "queryID": 17,
+    "queryText": "metallurgy"
+  },
+  {
+    "queryID": 18,
+    "queryText": "applications data mining in health"
+  },
+  {
+    "queryID": 19,
+    "queryText": "business intelligence prediction"
+  },
+  {
+    "queryID": 20,
+    "queryText": "agile methodologies"
+  },
+  {
+    "queryID": 21,
+    "queryText": "quantum computing"
+  },
+  {
+    "queryID": 22,
+    "queryText": "master data management"
+  },
+  {
+    "queryID": 23,
+    "queryText": "Microeconomic"
+  },
+  {
+    "queryID": 24,
+    "queryText": "data structures and algorithms"
+  },
+  {
+    "queryID": 25,
+    "queryText": "baidu"
+  },
+  {
+    "queryID": 26,
+    "queryText": "process mining"
+  },
+  {
+    "queryID": 27,
+    "queryText": "history of the united states"
+  },
+  {
+    "queryID": 28,
+    "queryText": "genetic algorithms"
+  },
+  {
+    "queryID": 29,
+    "queryText": "learn to play the guitar"
+  },
+  {
+    "queryID": 30,
+    "queryText": "cook"
+  },
+  {
+    "queryID": 31,
+    "queryText": "programming C#"
+  },
+  {
+    "queryID": 32,
+    "queryText": "Dutch language"
+  },
+  {
+    "queryID": 33,
+    "queryText": "applications of probability and statistics in engineering"
+  },
+  {
+    "queryID": 34,
+    "queryText": "watercolor painting"
+  },
+  {
+    "queryID": 35,
+    "queryText": "big data scala"
+  },
+  {
+    "queryID": 36,
+    "queryText": "programming C"
+  },
+  {
+    "queryID": 37,
+    "queryText": "checkout process optimization"
+  },
+  {
+    "queryID": 38,
+    "queryText": "science"
+  },
+  {
+    "queryID": 39,
+    "queryText": "ebola"
+  },
+  {
+    "queryID": 40,
+    "queryText": "android game developement"
+  },
+  {
+    "queryID": 41,
+    "queryText": "big data spark"
+  },
+  {
+    "queryID": 42,
+    "queryText": "system programming"
+  },
+  {
+    "queryID": 43,
+    "queryText": "Effective Communication"
+  },
+  {
+    "queryID": 44,
+    "queryText": "gather information"
+  },
+  {
+    "queryID": 45,
+    "queryText": "vhdl"
+  },
+  {
+    "queryID": 46,
+    "queryText": "RFID"
+  },
+  {
+    "queryID": 47,
+    "queryText": "data analysis"
+  },
+  {
+    "queryID": 48,
+    "queryText": "object segmentation image"
+  },
+  {
+    "queryID": 49,
+    "queryText": "basic economics"
+  },
+  {
+    "queryID": 50,
+    "queryText": "learn japanese"
+  },
+  {
+    "queryID": 51,
+    "queryText": "investing"
+  },
+  {
+    "queryID": 52,
+    "queryText": "cooking"
+  },
+  {
+    "queryID": 53,
+    "queryText": "graph partioning"
+  },
+  {
+    "queryID": 54,
+    "queryText": "user experience web interface design"
+  },
+  {
+    "queryID": 55,
+    "queryText": "probability and statistics"
+  },
+  {
+    "queryID": 56,
+    "queryText": "Business analytics"
+  },
+  {
+    "queryID": 57,
+    "queryText": "probability basics"
+  },
+  {
+    "queryID": 58,
+    "queryText": "coursera algorithm course"
+  },
+  {
+    "queryID": 59,
+    "queryText": "distributed computing"
+  },
+  {
+    "queryID": 60,
+    "queryText": "Linear Programming"
+  },
+  {
+    "queryID": 61,
+    "queryText": "random forests"
+  },
+  {
+    "queryID": 62,
+    "queryText": "databases"
+  },
+  {
+    "queryID": 63,
+    "queryText": "math teaching"
+  },
+  {
+    "queryID": 64,
+    "queryText": "learn natural language processing"
+  },
+  {
+    "queryID": 65,
+    "queryText": "software testing"
+  },
+  {
+    "queryID": 66,
+    "queryText": "mining social networks"
+  },
+  {
+    "queryID": 67,
+    "queryText": "learn spanish asap"
+  },
+  {
+    "queryID": 68,
+    "queryText": "hadoop big data MapReduce"
+  },
+  {
+    "queryID": 69,
+    "queryText": "programming python begginer"
+  },
+  {
+    "queryID": 70,
+    "queryText": "Arabic"
+  },
+  {
+    "queryID": 71,
+    "queryText": "dog trainig puppies"
+  },
+  {
+    "queryID": 72,
+    "queryText": "unreal engine programming"
+  },
+  {
+    "queryID": 73,
+    "queryText": "lambda calculus and combinators"
+  },
+  {
+    "queryID": 74,
+    "queryText": "Bayesian Inference"
+  },
+  {
+    "queryID": 75,
+    "queryText": "Data visualization html javascript tutorial"
+  },
+  {
+    "queryID": 76,
+    "queryText": "Gamification"
+  },
+  {
+    "queryID": 77,
+    "queryText": "\\learn artificial intelligence algorithms for multi-agent systems"
+  },
+  {
+    "queryID": 78,
+    "queryText": "functional reactive programming"
+  },
+  {
+    "queryID": 79,
+    "queryText": "sparrows, bees and cell phones"
+  },
+  {
+    "queryID": 80,
+    "queryText": "music course"
+  },
+  {
+    "queryID": 81,
+    "queryText": "ontology"
+  },
+  {
+    "queryID": 82,
+    "queryText": "local sensitive hashing"
+  },
+  {
+    "queryID": 83,
+    "queryText": "mining sentiments in texts"
+  },
+  {
+    "queryID": 84,
+    "queryText": "quantum mechanics"
+  },
+  {
+    "queryID": 85,
+    "queryText": "risk management"
+  },
+  {
+    "queryID": 86,
+    "queryText": "Bioinformatics"
+  },
+  {
+    "queryID": 87,
+    "queryText": "data management"
+  },
+  {
+    "queryID": 88,
+    "queryText": "debugging code"
+  },
+  {
+    "queryID": 89,
+    "queryText": "Theory of Black Holes"
+  },
+  {
+    "queryID": 90,
+    "queryText": "make a wearable arduino device"
+  },
+  {
+    "queryID": 91,
+    "queryText": "computational linguistics"
+  },
+  {
+    "queryID": 92,
+    "queryText": "Text retrieval"
+  },
+  {
+    "queryID": 93,
+    "queryText": "asian cuisine"
+  },
+  {
+    "queryID": 94,
+    "queryText": "how to build a pivot table in microsoft excel"
+  },
+  {
+    "queryID": 95,
+    "queryText": "How to compose a song"
+  },
+  {
+    "queryID": 96,
+    "queryText": "Business applications of Game Theory"
+  },
+  {
+    "queryID": 97,
+    "queryText": "best search engines"
+  },
+  {
+    "queryID": 98,
+    "queryText": "Neural networks"
+  },
+  {
+    "queryID": 99,
+    "queryText": "ml"
+  }
+]

@@ -1,13 +1,6 @@
-indices/moocs.json
-indices/cf.json
-corpora/moocs/json/json_norm/moocs_norm_pandas.json
-corpora/moocs/json/moocs.json
+indices/*
 pruebas.py
 indexer_alone.py
 indexer_pablo.py
 searcher_pablo.py
-corpora/cf/json/json_norm/cf_norm_pandas copy.json
-indices/moocs_lens.json
-indices/cf_lens.json
-corpora/moocs/json/moocs_reducido.json
-corpora/cf/json/json_norm/cf_norm_pandas.json
+corpora/*
