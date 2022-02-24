@@ -17,13 +17,12 @@ def load_docs(arg):
     with open(path+corpus+path2) as f:
         ref_docs = json.loads(f.read())
     '''OURS'''
-    # with open() as f:
-    #    our_docs = json.loads(f.read())
-    our_docs = None
+    with open(path+corpus+"\json\cf_results.json") as f:
+        our_docs = json.loads(f.read())
     '''TEACHER'''
     with open('.\TFIDF_reference_results'+corpus+'_ref_qresults.json') as f:
         teach_docs = json.loads(f.read())
-    return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs), our_docs
+    return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs), pd.json_normalize(our_docs)
 
 
 def get_args():
@@ -183,30 +182,32 @@ def metrics(ref_docs, teach_docs, our_docs):
         # lista con los documentos relevantes para una query
         relDocs = ref_docs["relevantDocs"][index]
         teachDocs = teach_docs["relevantDocs"][index]
-        #ourDocs = our_docs["relevantDocs"][index]
+        ourDocs = our_docs["relevantDocs"][index]
         '''Precision-Recall Normalizado'''
         teachPrec = prec_rec(relDocs, teachDocs)
         vTeachPrec.append(teachPrec)
-        #ourPrec = prec_rec(relDocs, ourDocs)
-        # vOurPrec.append(OurPrec)
+        ourPrec = prec_rec(relDocs, ourDocs)
+        vOurPrec.append(ourPrec)
         '''MAP- Mean Average Precision'''
-        #ourMAP = MAP_vector(relDocs,ourDocs)
-        # vOurMAP.append(ourMAP)
+        ourMAP = MAP_vector(relDocs,ourDocs)
+        vOurMAP.append(ourMAP)
         teachMAP = MAP_vector(relDocs, teachDocs)
         vTeachMAP.append(teachMAP)
         '''p at N'''
         teachAt5 = teachAt5 + p_at_n(relDocs, teachDocs, 5)
-        #our_at_5 = p_at_n(relDocs,ourDocs,5)
+        ourAt5 = ourAt5 + p_at_n(relDocs,ourDocs,5)
         '''r-Precision'''
         teachRPrec = teachRPrec + rPrecision(relDocs, teachDocs)
+        ourRPrec = ourRPrec + rPrecision(relDocs,ourDocs)
         '''MRR'''
         teachMRR = teachMRR + MRR(relDocs, teachDocs)
+        ourMRR = ourMRR + MRR(relDocs,ourDocs)
         '''MRE'''
         teachMRE = MRE(relDocs, teachDocs)  # en proceso hahahaha
         '''Valores totales de recall y precision para Fmeasure'''
-        #our_avg_prec,our_avg_rec = avg_prec_rec(relDocs,ourDocs)
-        #our_overall_prec = our_overall_prec+our_avg_prec
-        #our_overall_rec = our_overall_rec+our_avg_rec
+        our_avg_prec,our_avg_rec = avg_prec_rec(relDocs,ourDocs)
+        our_overall_prec = our_overall_prec+our_avg_prec
+        our_overall_rec = our_overall_rec+our_avg_rec
         teach_avg_prec, teach_avg_rec = avg_prec_rec(relDocs, teachDocs)
         teach_overall_prec = teach_overall_prec+teach_avg_prec
         teach_overall_rec = teach_overall_rec+teach_avg_rec
@@ -214,22 +215,28 @@ def metrics(ref_docs, teach_docs, our_docs):
     '''Valores promedio de recall y precision para Fmeasure'''
     teach_avg_prec = teach_overall_prec/len(teach_docs)
     teach_avg_rec = teach_overall_rec/len(teach_docs)
+    our_avg_prec = our_overall_prec/len(our_docs)
+    our_avg_rec =our_overall_rec/len(our_docs)
     write_file("Teacher's average precision: " + str(teach_avg_prec) +
-               "\nTeacher's average recall: " + str(teach_avg_rec))
-    #our_avg_prec= our_avg_rec/len(our_docs)
-    #our_avg_rec= our_avg_rec/len(our_docs)
+               "\nTeacher's average recall: " + str(teach_avg_rec) +
+               "\nOur average precision: " + str(our_avg_prec) +
+               "\nOur average recall: " + str(our_avg_rec) )
     '''F1'''
-    #our_F1 = f_beta(our_avg_prec,our_avg_rec)
     write_file("\nTeacher's F1 Score: " +
-               str(f_beta(teach_avg_prec, teach_avg_rec, 1)))
+               str(f_beta(teach_avg_prec, teach_avg_rec, 1))
+               + "\nOur F1 Score: " +
+               str(f_beta(our_avg_prec,our_avg_rec,1)))
     '''MAP'''
-    write_file("\nTeacher's MAP: " + str(MAP(vTeachMAP, ref_docs)))
+    write_file("\nTeacher's MAP: " + str(MAP(vTeachMAP, ref_docs))+"\nOur MAP: " + str(MAP(vOurMAP, ref_docs)))
     '''p at n'''
-    write_file("\nTeacher's precision at 5: " + str(teachAt5/len(teach_docs)))
+    write_file("\nTeacher's precision at 5: " + str(teachAt5/len(teach_docs))+
+    "\nOur precision at 5: " + str(ourAt5/len(our_docs)))
     '''r-Precision'''
-    write_file("\nTeacher's R-precision: " + str(teachRPrec/len(teach_docs)))
+    write_file("\nTeacher's R-precision: " + str(teachRPrec/len(teach_docs))+
+    "\nOur R-precision: " + str(ourRPrec/len(our_docs)))
     '''MRR'''
-    write_file("\nTeacher's MRR: " + str(teachMRR/len(teach_docs)))
+    write_file("\nTeacher's MRR: " + str(teachMRR/len(teach_docs))
+    +"\nOur MRR: " + str(ourMRR/len(our_docs)))
     '''MRE'''
     
     compare_metrics(teach_avg_prec)
