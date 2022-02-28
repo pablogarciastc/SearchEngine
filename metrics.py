@@ -121,8 +121,9 @@ def MRR(relDocs, compDocs):
 '''Multilevel Relevance Evaluation , utilizaremos n documentos'''
 
 
-def MRE(relDocs, compDocs, puntDocs, nDocs):
+def MRE_DCG(relDocs, compDocs, puntDocs, nDocs):
     CG = []
+    aux = nDocs
     if len(compDocs) < nDocs:
         nDocs = len(compDocs)
 
@@ -130,23 +131,53 @@ def MRE(relDocs, compDocs, puntDocs, nDocs):
         if compDocs[i] in relDocs:
             # se coge los 4 valores de relevancia de esa coincidencia
             relevance = puntDocs[relDocs.index(compDocs[i])]['relevance']
-            avg_relevance = (
-                int(relevance[0]) + int(relevance[1]) + int(relevance[2]) + int(relevance[3])) / 4
-            if i == 0:
-                avg_relevance = avg_relevance
-            else:
+            avg_relevance = 0
+            for rel in relevance:
+                avg_relevance = avg_relevance + int(rel)
+            avg_relevance = avg_relevance/len(relevance)
+            if i != 0:
                 avg_relevance = avg_relevance / math.log2(i+1)
-
-            if CG:
                 CG.append(avg_relevance+CG[-1])
             else:
                 CG.append(avg_relevance)
-
         else:
             if CG:
                 CG.append(CG[-1])
             else:
                 CG.append(0)
+    if(nDocs < aux):
+        for i in range(0, aux-nDocs):
+            CG.append(0)   ### ¿¿¿ se appendean 0 o 1????
+
+    return CG, nDocs
+
+def MRE_CG(relDocs, compDocs, puntDocs, nDocs):
+    CG = []
+    aux = nDocs
+    if len(compDocs) < nDocs:
+        nDocs = len(compDocs)
+
+    for i in range(nDocs):
+        if compDocs[i] in relDocs:
+            # se coge los 4 valores de relevancia de esa coincidencia
+            relevance = puntDocs[relDocs.index(compDocs[i])]['relevance']
+            avg_relevance = 0
+            for rel in relevance:
+                avg_relevance = avg_relevance + int(rel)
+            avg_relevance = avg_relevance/len(relevance)
+            if i != 0:
+                avg_relevance = avg_relevance
+                CG.append(avg_relevance+CG[-1])
+            else:
+                CG.append(avg_relevance)
+        else:
+            if CG:
+                CG.append(CG[-1])
+            else:
+                CG.append(0)
+    if(nDocs < aux):
+        for i in range(0, aux-nDocs):
+            CG.append(0)   ### ¿¿¿ se appendean 0 o 1????
 
     return CG, nDocs
 
@@ -201,8 +232,10 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
     vOurPrec = []
     vTeachMAP = []
     vOurMAP = []
-    vTeachMRE = []
-    vOurMRE = []
+    vTeachDCG = []
+    vOurDCG = []
+    vTeachCG = []
+    vOurCG = []
     vTeachRPrec = []
     vOurRPrec = []
     F1MacroTeach = 0
@@ -253,8 +286,15 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
         teachMRR = teachMRR + MRR(relDocs, teachDocs)
         ourMRR = ourMRR + MRR(relDocs, ourDocs)
         '''MRE'''
-        #CG,n = MRE(relDocs, teachDocs, puntDocsTeach,15)
-        # vTeachMRE.append(CG)
+        DCGteach, n = MRE_DCG(relDocs, teachDocs, puntDocsTeach, 25)
+        vTeachDCG.append(DCGteach)
+        DCGour, n = MRE_DCG(relDocs, teachDocs, puntDocsTeach, 25)
+        vOurDCG.append(DCGour)
+
+        CGteach, n = MRE_CG(relDocs, teachDocs, puntDocsTeach, 25)
+        vTeachCG.append(CGteach)
+        CGour, n = MRE_CG(relDocs, teachDocs, puntDocsTeach, 25)
+        vOurCG.append(CGour)
 
         '''Valores totales de recall y precision para Fmeasure'''
         our_avg_prec, our_avg_rec = avg_prec_rec(relDocs, ourDocs)
@@ -301,12 +341,22 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
     write_file("\nTeacher's MRR: " + "{:.3f}".format(teachMRR/len(teach_docs))
                + "\nOur MRR: " + "{:.3f}".format(ourMRR/len(our_docs)))
     '''MRE'''
+    vDCGavgTeach = [sum(i) for i in zip(*vTeachDCG)]
+    vDCGavgTeach = [vDCGavgTeach / len(vTeachDCG)
+                    for vDCGavgTeach in vDCGavgTeach]
+    vDCGavgOur = [sum(i) for i in zip(*vTeachDCG)]
+    vDCGavgOur = [vDCGavgOur / len(vTeachDCG) for vDCGavgOur in vDCGavgOur]
 
+    vCGavgTeach = [sum(i) for i in zip(*vTeachCG)]
+    vCGavgTeach = [vCGavgTeach / len(vTeachCG)
+                    for vCGavgTeach in vCGavgTeach]
+    vCGavgOur = [sum(i) for i in zip(*vTeachCG)]
+    vCGavgOur = [vCGavgOur / len(vTeachCG) for vCGavgOur in vCGavgOur]
     '''Compare metrics and graphs'''
     # prec_rec_curve(vOurPrec,vTeachPrec)
     # queries_bars(vOurRPrec,vTeachRPrec)
-    # CG_DCG_curve()
-    #nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP)
+    CG_DCG_curve(vDCGavgTeach, vDCGavgOur)
+    # nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP)
 
 
 def nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP):
