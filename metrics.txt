@@ -6,13 +6,13 @@ Teacher's F1 Micro Score: 0.189
 Our F1 Micro Score: 0.224
 Teacher's F1 Macro Score: 0.152
 Our F1 Macro Score: 0.196
-Teacher's MAP: 0.216
-Our MAP: 0.205
-Teacher's precision at 5: 0.335
+Teacher's MAP: 0.083
+Our MAP: 0.116
+Teacher's precision at 5: 0.320
 Our precision at 5: 0.524
-Teacher's precision at 10: 0.289
-Our precision at 10: 0.462
-Teacher's R-precision: 0.262
-Our R-precision: 0.471
+Teacher's precision at 10: 0.237
+Our precision at 10: 0.416
+Teacher's R-precision: 0.130
+Our R-precision: 0.147
 Teacher's MRR: 0.576
 Our MRR: 0.832

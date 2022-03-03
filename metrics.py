@@ -23,13 +23,10 @@ def load_docs(arg):
     '''TEACHER'''
     with open('.\TFIDF_reference_results'+corpus+'_ref_qresults.json') as f:
         teach_docs = json.loads(f.read())
-    '''PUNT TEACHER'''
-    with open(path+corpus+'\json\qscoredrels.json') as f:
-        punt_docs_teach = json.loads(f.read())
-    '''PUNT OURS'''
-    with open(path+corpus+'\json\qscoredrels.json') as f:
-        punt_docs_ours = json.loads(f.read())
-    return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs), pd.json_normalize(our_docs), pd.json_normalize(punt_docs_teach), pd.json_normalize(punt_docs_ours)
+    '''PUNT '''
+    with open(path+'\cf\json\qscoredrels.json') as f:
+        punt_docs = json.loads(f.read())
+    return pd.json_normalize(ref_docs), pd.json_normalize(teach_docs), pd.json_normalize(our_docs), pd.json_normalize(punt_docs)
 
 
 def get_args():
@@ -37,6 +34,57 @@ def get_args():
     parser.add_argument("-c", dest="c")  # corpus
     parser.add_argument("-rf", dest="rf")  # result-file path
     return parser.parse_args()
+
+
+def normalize_precision2(precision, recall):  # normalizar a Standard 11-level
+    realRecall = recall
+    newPrecision=[0,0,0,0,0,0,0,0,0,0,0]
+    for i in range(len(realRecall)):
+        if 0 <= realRecall[i] <= 0.1:
+            if newPrecision[0] < precision[i]:
+                newPrecision[0] = precision[i]
+        if 0.1 < realRecall[i] <= 0.2:
+            if newPrecision[1] < precision[i]:
+                newPrecision[1] = precision[i]
+        if 0.2 < realRecall[i] <= 0.3:
+            if newPrecision[2] < precision[i]:
+                newPrecision[2] = precision[i]
+        if 0.3 < realRecall[i] <= 0.4:
+            if newPrecision[3] < precision[i]:
+                newPrecision[3] = precision[i]
+        if 0.4 < realRecall[i] <= 0.5:
+            if newPrecision[4] < precision[i]:
+                newPrecision[4] = precision[i]
+        if 0.5 < realRecall[i] <= 0.6:
+            if newPrecision[5] < precision[i]:
+                newPrecision[5] = precision[i]
+        if 0.6 < realRecall[i] <= 0.7:
+            if newPrecision[6] < precision[i]:
+                newPrecision[6] = precision[i]
+        if 0.7 < realRecall[i] <= 0.8:
+            if newPrecision[7] < precision[i]:
+                newPrecision[7] = precision[i]
+        if 0.8 < realRecall[i] <= 0.9:
+            if newPrecision[8] < precision[i]:
+                newPrecision[8] = precision[i]
+        if 0.9 < realRecall[i] <= 1:
+            if newPrecision[9] < precision[i]:
+                newPrecision[9] = precision[i]
+
+    
+    p = np.array(newPrecision)
+    m = np.zeros(p.size, dtype=bool)
+    precision11 = []
+    excptIndx = []
+    precNorm = [0,0,0,0,0,0,0,0,0,0,0]
+
+
+    for i in range(len(newPrecision)):
+        m[excptIndx] = True
+        a = np.ma.array(p, mask=m)
+        precNorm[i] = newPrecision[np.argmax(a)]
+        excptIndx.append(i)
+    return precNorm
 
 
 def normalize_precision(precision, recall):  # normalizar a Standard 11-level
@@ -71,7 +119,6 @@ def prec_rec(relDocs, compDocs):  # los objetivamente relevantes y los a compara
     precision = []
     recall = []
     hits = 0
-
     for i in range(len(compDocs)):
         if compDocs[i] in relDocs:
             hits += 1
@@ -79,7 +126,7 @@ def prec_rec(relDocs, compDocs):  # los objetivamente relevantes y los a compara
             rec = hits/len(relDocs)
             precision.append(prec)
             recall.append(rec)
-    precision = normalize_precision(precision, recall)
+    precision = normalize_precision2(precision, recall)
     return precision
 
 
@@ -89,8 +136,8 @@ def MAP_vector(relDocs, compDocs):
     for i in range(len(compDocs)):
         if compDocs[i] in relDocs:
             hits += 1
-        prec = hits/(i+1)
-        precision.append(prec)
+            prec = hits/(i+1)
+            precision.append(prec)
     return precision
 
 
@@ -122,7 +169,7 @@ def MRR(relDocs, compDocs):
 
 
 def MRE_DCG(relDocs, compDocs, puntDocs, nDocs):
-    CG = []
+    DCG = []
     aux = nDocs
     if len(compDocs) < nDocs:
         nDocs = len(compDocs)
@@ -132,24 +179,27 @@ def MRE_DCG(relDocs, compDocs, puntDocs, nDocs):
             # se coge los 4 valores de relevancia de esa coincidencia
             relevance = puntDocs[relDocs.index(compDocs[i])]['relevance']
             avg_relevance = 0
-            for rel in relevance:
-                avg_relevance = avg_relevance + int(rel)
-            avg_relevance = avg_relevance/len(relevance)
+            if type(relevance) is list:
+                for rel in relevance:
+                    avg_relevance = avg_relevance + int(rel)
+            else:
+                avg_relevance = relevance
             if i != 0:
                 avg_relevance = avg_relevance / math.log2(i+1)
-                CG.append(avg_relevance+CG[-1])
+                DCG.append(avg_relevance+DCG[-1])
             else:
-                CG.append(avg_relevance)
+                DCG.append(avg_relevance)
         else:
-            if CG:
-                CG.append(CG[-1])
+            if DCG:
+                DCG.append(DCG[-1])
             else:
-                CG.append(0)
+                DCG.append(0)
     if(nDocs < aux):
         for i in range(0, aux-nDocs):
-            CG.append(0)   ### ¿¿¿ se appendean 0 o 1????
+            DCG.append(0)
 
-    return CG, nDocs
+    return DCG
+
 
 def MRE_CG(relDocs, compDocs, puntDocs, nDocs):
     CG = []
@@ -162,9 +212,11 @@ def MRE_CG(relDocs, compDocs, puntDocs, nDocs):
             # se coge los 4 valores de relevancia de esa coincidencia
             relevance = puntDocs[relDocs.index(compDocs[i])]['relevance']
             avg_relevance = 0
-            for rel in relevance:
-                avg_relevance = avg_relevance + int(rel)
-            avg_relevance = avg_relevance/len(relevance)
+            if type(relevance) is list:
+                for rel in relevance:
+                    avg_relevance = avg_relevance + int(rel)
+            else:
+                avg_relevance = relevance
             if i != 0:
                 avg_relevance = avg_relevance
                 CG.append(avg_relevance+CG[-1])
@@ -177,9 +229,8 @@ def MRE_CG(relDocs, compDocs, puntDocs, nDocs):
                 CG.append(0)
     if(nDocs < aux):
         for i in range(0, aux-nDocs):
-            CG.append(0)   ### ¿¿¿ se appendean 0 o 1????
-
-    return CG, nDocs
+            CG.append(0)  
+    return CG
 
 
 def avg_prec_rec(relDocs, compDocs):
@@ -202,6 +253,7 @@ def write_file(txt):
 
 def p_at_n(relDocs, compDocs, n):
     hits = 0
+    aux = n
     if len(compDocs) < n:
         n = len(compDocs)
         if n == 0:
@@ -209,7 +261,7 @@ def p_at_n(relDocs, compDocs, n):
     for i in range(n):
         if compDocs[i] in relDocs:
             hits += 1
-    prec = hits/n
+    prec = hits/aux
     return prec
 
 
@@ -223,11 +275,24 @@ def rPrecision(relDocs, compDocs):
     for i in range(n):
         if compDocs[i] in relDocs:
             hits += 1
-    prec = hits/n
+    prec = hits/len(relDocs)
     return prec
 
 
-def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
+def ideal_docs(puntDocs, nDocs):
+    for i in range(len(puntDocs)):
+        avg_relevance = 0
+        relevance = puntDocs[i]["relevance"]
+        for rel in relevance:
+            avg_relevance = avg_relevance + int(rel)
+        puntDocs[i]["relevance"] = avg_relevance
+    puntDocs = sorted(puntDocs, key=lambda d: d['relevance'], reverse=True)
+    return [d.get('relevantDoc', None) for d in puntDocs]
+
+
+def metrics(ref_docs, teach_docs, our_docs, punt_docs):
+    args = get_args()
+    corpus = args.c
     vTeachPrec = []
     vOurPrec = []
     vTeachMAP = []
@@ -238,6 +303,8 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
     vOurCG = []
     vTeachRPrec = []
     vOurRPrec = []
+    vIdealDCG = []
+    vIdealCG = []
     F1MacroTeach = 0
     F1MacroOur = 0
     teach_overall_prec = 0
@@ -257,8 +324,7 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
         relDocs = ref_docs["relevantDocs"][index]
         teachDocs = teach_docs["relevantDocs"][index]
         ourDocs = our_docs["relevantDocs"][index]
-        puntDocsTeach = punt_docs_teach["relevantDocs"][index]
-        puntDocsOur = punt_docs_our["relevantDocs"][index]
+        puntDocs = punt_docs["relevantDocs"][index]
 
         '''Precision-Recall Normalizado'''
         teachPrec = prec_rec(relDocs, teachDocs)
@@ -266,10 +332,11 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
         ourPrec = prec_rec(relDocs, ourDocs)
         vOurPrec.append(ourPrec)
         '''MAP - Mean Average Precision'''
-        ourMAP = MAP_vector(relDocs, ourDocs)
-        vOurMAP.append(ourMAP)
         teachMAP = MAP_vector(relDocs, teachDocs)
         vTeachMAP.append(teachMAP)
+        ourMAP = MAP_vector(relDocs, ourDocs)
+        vOurMAP.append(ourMAP)
+
         '''p at N'''
         teachAt5 = teachAt5 + p_at_n(relDocs, teachDocs, 5)
         ourAt5 = ourAt5 + p_at_n(relDocs, ourDocs, 5)
@@ -286,15 +353,22 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
         teachMRR = teachMRR + MRR(relDocs, teachDocs)
         ourMRR = ourMRR + MRR(relDocs, ourDocs)
         '''MRE'''
-        DCGteach, n = MRE_DCG(relDocs, teachDocs, puntDocsTeach, 25)
-        vTeachDCG.append(DCGteach)
-        DCGour, n = MRE_DCG(relDocs, teachDocs, puntDocsTeach, 25)
-        vOurDCG.append(DCGour)
+        if corpus == "cf":
+            nDocs = 15
+            idealDocs = ideal_docs(puntDocs, nDocs)
+            DCGteach = MRE_DCG(relDocs, teachDocs, puntDocs, nDocs)
+            vTeachDCG.append(DCGteach)
+            DCGour = MRE_DCG(relDocs, ourDocs, puntDocs, nDocs)
+            vOurDCG.append(DCGour)
+            DCGideal = MRE_DCG(relDocs, idealDocs, puntDocs, nDocs)
+            vIdealDCG.append(DCGideal)
 
-        CGteach, n = MRE_CG(relDocs, teachDocs, puntDocsTeach, 25)
-        vTeachCG.append(CGteach)
-        CGour, n = MRE_CG(relDocs, teachDocs, puntDocsTeach, 25)
-        vOurCG.append(CGour)
+            CGteach = MRE_CG(relDocs, teachDocs, puntDocs, nDocs)
+            vTeachCG.append(CGteach)
+            CGour = MRE_CG(relDocs, ourDocs, puntDocs, nDocs)
+            vOurCG.append(CGour)
+            CGideal = MRE_CG(relDocs, idealDocs, puntDocs, nDocs)
+            vIdealCG.append(CGideal)
 
         '''Valores totales de recall y precision para Fmeasure'''
         our_avg_prec, our_avg_rec = avg_prec_rec(relDocs, ourDocs)
@@ -341,21 +415,41 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_our):
     write_file("\nTeacher's MRR: " + "{:.3f}".format(teachMRR/len(teach_docs))
                + "\nOur MRR: " + "{:.3f}".format(ourMRR/len(our_docs)))
     '''MRE'''
-    vDCGavgTeach = [sum(i) for i in zip(*vTeachDCG)]
-    vDCGavgTeach = [vDCGavgTeach / len(vTeachDCG)
-                    for vDCGavgTeach in vDCGavgTeach]
-    vDCGavgOur = [sum(i) for i in zip(*vTeachDCG)]
-    vDCGavgOur = [vDCGavgOur / len(vTeachDCG) for vDCGavgOur in vDCGavgOur]
+    if corpus == "cf":
 
-    vCGavgTeach = [sum(i) for i in zip(*vTeachCG)]
-    vCGavgTeach = [vCGavgTeach / len(vTeachCG)
-                    for vCGavgTeach in vCGavgTeach]
-    vCGavgOur = [sum(i) for i in zip(*vTeachCG)]
-    vCGavgOur = [vCGavgOur / len(vTeachCG) for vCGavgOur in vCGavgOur]
+        vDCGavgTeach = [sum(i) for i in zip(*vTeachDCG)]
+        vDCGavgTeach = [vDCGavgTeach / len(vTeachDCG)
+                        for vDCGavgTeach in vDCGavgTeach]
+        vDCGavgOur = [sum(i) for i in zip(*vOurDCG)]
+        vDCGavgOur = [vDCGavgOur / len(vOurDCG) for vDCGavgOur in vDCGavgOur]
+
+        vDCGavgIdeal = [sum(i) for i in zip(*vIdealDCG)]
+        vDCGavgIdeal = [vDCGavgIdeal / len(vIdealDCG)
+                        for vDCGavgIdeal in vDCGavgIdeal]
+
+        NDCGour = np.divide(vDCGavgOur, vDCGavgIdeal)
+        NDCGteach = np.divide(vDCGavgTeach, vDCGavgIdeal)
+
+        vCGavgTeach = [sum(i) for i in zip(*vTeachCG)]
+        vCGavgTeach = [vCGavgTeach / len(vTeachCG)
+                       for vCGavgTeach in vCGavgTeach]
+        vCGavgOur = [sum(i) for i in zip(*vOurCG)]
+        vCGavgOur = [vCGavgOur / len(vOurCG) for vCGavgOur in vCGavgOur]
+
+        vCGavgIdeal = [sum(i) for i in zip(*vIdealCG)]
+        vCGavgIdeal = [vCGavgIdeal / len(vIdealCG)
+                       for vCGavgIdeal in vCGavgIdeal]
+
+        NCGour = np.divide(vCGavgOur, vCGavgIdeal)
+        NCGteach = np.divide(vCGavgTeach, vCGavgIdeal)
+
+        #CG_DCG_curve(NCGteach, NCGour,"NCG")
+        #CG_DCG_curve(NDCGteach, NDCGour,"NDCG")
+
+
     '''Compare metrics and graphs'''
-    # prec_rec_curve(vOurPrec,vTeachPrec)
+    prec_rec_curve(vOurPrec, vTeachPrec)
     # queries_bars(vOurRPrec,vTeachRPrec)
-    CG_DCG_curve(vDCGavgTeach, vDCGavgOur)
     # nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP)
 
 
@@ -420,7 +514,7 @@ def nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_av
     fig.write_image("images/9bars.png")
 
 
-def CG_DCG_curve(teach, our):
+def CG_DCG_curve(teach, our, str):
     length = len(our)
     fig = go.Figure()
     fig = fig.add_trace(go.Scatter(x=list(range(0, length)), y=our,
@@ -429,16 +523,16 @@ def CG_DCG_curve(teach, our):
                                    connectgaps=True,
                                    name='Teacher', line_color='red', mode='lines+markers'))
     fig = fig.update_layout(xaxis_title='Query',
-                            yaxis_title='NDCG', title='NDCG Vector')
+                            yaxis_title=str, title=str+ ' Vector')
     fig.update_layout(
         font_color="black",
         title_font_color="red",
         legend_title_font_color="black"
     )
 
-    fig.write_html('images/NDCG.html',
+    fig.write_html('images/' + str +'.html',
                    auto_open=True)
-    fig.write_image("images/NDCG.png")
+    fig.write_image("images/"+str+".png")
 
 
 def queries_bars(vOurRPrec, vTeachRPrec):
@@ -521,9 +615,9 @@ def main():
     f.write("")
     f.close()
     args = get_args()
-    ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_ours = load_docs(
+    ref_docs, teach_docs, our_docs, punt_docs = load_docs(
         args)
-    metrics(ref_docs, teach_docs, our_docs, punt_docs_teach, punt_docs_ours)
+    metrics(ref_docs, teach_docs, our_docs, punt_docs)
 
 
 if __name__ == '__main__':

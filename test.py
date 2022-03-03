@@ -6,50 +6,63 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-vTeachMRE = []
-
-def MRE(relDocs, compDocs, puntDocs, nDocs):
-    CG = []
-    aux = nDocs
-    if len(compDocs) < nDocs:
-        nDocs = len(compDocs)
-
-    for i in range(nDocs):
-        if compDocs[i] in relDocs:
-            # se coge los 4 valores de relevancia de esa coincidencia
-            relevance = puntDocs[relDocs.index(compDocs[i])]['relevance']
-            avg_relevance = (
-                int(relevance[0]) + int(relevance[1]) + int(relevance[2]) + int(relevance[3])) / 4
-            if i == 0:
-                avg_relevance = avg_relevance
+def normalize_precision(precision, recall):  # normalizar a Standard 11-level
+    normRec = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    normPrec = []
+    aux = 0
+    if not precision:
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for i in range(len(normRec)):
+        if aux != (len(recall) - 1):
+            if i == 0:  # el primero siempre se almacena
+                normPrec.append(np.amax(precision[aux:]))
             else:
-                avg_relevance = avg_relevance / math.log2(i+1)
-
-            if CG:
-                CG.append(avg_relevance+CG[-1])
-            else:
-                CG.append(avg_relevance)
-
+                if normRec[i] > recall[aux]:
+                    aux += 1
+                normPrec.append(np.amax(precision[aux:]))
         else:
-            if CG:
-                CG.append(CG[-1])
+            if recall[aux] >= normRec[i]:
+                normPrec.append(np.amax(precision[aux:]))
             else:
-                CG.append(0)
-    if(nDocs<aux):
-        for i in range(0,aux-nDocs):
-            CG.append(CG[-1])
+                normPrec.append(0)
+    return normPrec
 
-    return CG, nDocs
+def normalize_precision2(precision, recall):  # normalizar a Standard 11-level
+    normRec = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    normPrec = []
+    precNorm = [0,0,0,0,0,0,0,0,0,0,0]
+    aux = 0
+    p = np.array(precision)
+    m = np.zeros(p.size, dtype=bool)
+    excptIndx=[]
+    for i in range(len(precision)): 
+        m[excptIndx] = True
+        a = np.ma.array(p, mask=m)
+        precNorm[i]=precision[np.argmax(a)]
+        excptIndx.append(i)
+    print(precNorm)
 
+def prec_rec(relDocs, compDocs):  # los objetivamente relevantes y los a comparar
+    precision = []
+    recall = []
+    hits = 0
+    for i in range(len(compDocs)):
+        if compDocs[i] in relDocs:
+            hits += 1
+            prec = hits/(i+1)
+            rec = hits/len(relDocs)
+            precision.append(prec)
+            recall.append(rec)
+    print(precision)
+    precision = normalize_precision2(precision, recall)
+    return precision
 
-puntDocsTeach = [{'relevantDoc': 268, 'relevance': '2222'}, {'relevantDoc': 324, 'relevance': '2222'}, {'relevantDoc': 449, 'relevance': '2122'}, {'relevantDoc': 992, 'relevance': '1220'}, {'relevantDoc': 1191, 'relevance': '1001'}]
-[59, 183, 370, 579, 803, 833, 1000, 1017, 1033, 1097, 1232]
-[{'relevantDoc': 59, 'relevance': '0101'}, {'relevantDoc': 183, 'relevance': '2222'}, {'relevantDoc': 370, 'relevance': '1211'}, {'relevantDoc': 579, 'relevance': '2222'}, {'relevantDoc': 803, 'relevance': '1100'}, {'relevantDoc': 833, 'relevance': '0110'}, {'relevantDoc': 1000, 'relevance': '1212'}, {'relevantDoc': 1017, 'relevance': '2212'}, {'relevantDoc': 1033, 'relevance': '0001'}, {'relevantDoc': 1097, 'relevance': '1100'}, {'relevantDoc': 1232, 
-'relevance': '0101'}]
+relDocs1 = [3,56,129]
+relDocs2 = [3,5,9,25,39,44,56,71,89,123]
+Docs = [123,84,56,6,8,9,511,129,187,25,38,48,250,113,3]
+Docs1Prec = prec_rec(relDocs1,Docs)
+Docs2Prec = prec_rec(relDocs2,Docs)
 
-DCGteach,n = MRE(relDocs, teachDocs, puntDocsTeach,25)
-vTeachMRE.append(DCGteach)
+print(Docs2Prec)
 
-vMREavgTeach= [sum(i) for i in zip(*vTeachMRE)]
-vMREavgTeach = [vMREavgTeach / len(vTeachMRE) for vMREavgTeach in vMREavgTeach]
-
+  
