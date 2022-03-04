@@ -23,7 +23,10 @@ BC_TITLEM=0.9
 BC_DESCRIP=0.7
 
 #umbrales
-CF=0
-MOOCS=0
+CF=97.31
+MOOCS=99.78
+
+CFUmbral=1
+MOOCSUmbral=0.85
 
 

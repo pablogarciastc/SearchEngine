@@ -150,18 +150,53 @@ def variandoBCmoocs(queries_json):
 
 def variandoKmoocs(queries_json):
     file = open(".\F1Results\Kmoocs.txt", "w")
-    for p in np.linspace(1,5,50):
+    for p in np.linspace(1,5,10):
         variables.KM=p
         searcher.moocs_queries_file(queries_json,".\maximizerResults\K"+
             str(p)+".json")
         file.write("K_"+str(p)+"____#"+str(F1('\moocs',"\K"+str(p)+".json"))+"\n")
     file.close()
 
+def variandoPredcf(queries_json):
+    file = open(".\F1Results\Thresholdcf.txt", "w")
+    for p in np.linspace(97.31,97.39,9):
+        variables.CF=p
+        searcher.cf_queries_file(queries_json,".\maximizerResults\Thresholdcf"+
+            str(p)+".json")
+        file.write("Umbral_"+str(p)+"____#"+str(F1('\cf',"\Thresholdcf"+str(p)+".json"))+"\n")
+    file.close()
+
+def variandoPredmoocs(queries_json):
+    file = open(".\F1Results\Thresholdmoocs.txt", "w")
+    for p in np.linspace(99.75,99.85,11):
+        variables.MOOCS=p
+        searcher.moocs_queries_file(queries_json,".\maximizerResults\Thresholdmoocs"+
+            str(p)+".json")
+        file.write("Umbral_"+str(p)+"____#"+str(F1('\moocs',"\Thresholdmoocs"+str(p)+".json"))+"\n")
+    file.close()
+
+def variandoUmbralcf(queries_json):
+    file = open(".\F1Results\ThresholdFixedcf.txt", "w")
+    for p in np.linspace(0.1,1,19):
+        variables.CFUmbral=p
+        searcher.cf_queries_file(queries_json,".\maximizerResults\ThresholdFixedcf"+
+            str(p)+".json")
+        file.write("Umbral_"+str(p)+"____#"+str(F1('\cf',"\ThresholdFixedcf"+str(p)+".json"))+"\n")
+    file.close()
+
+def variandoUmbralmoocs(queries_json):
+    file = open(".\F1Results\ThresholdFixedmoocs.txt", "w")
+    for p in np.linspace(0.1,1,19):
+        variables.MOOCSUmbral=p
+        searcher.moocs_queries_file(queries_json,".\maximizerResults\ThresholdFixedmoocs"+
+            str(p)+".json")
+        file.write("Umbral_"+str(p)+"____#"+str(F1('\moocs',"\ThresholdFixedmoocs"+str(p)+".json"))+"\n")
+    file.close()
 
 def main():
     ''' CF ''' 
     # with open('.\corpora\cf\json\queries.json') as f:
-    #         queries_json = json.loads(f.read())
+    #        queries_json = json.loads(f.read())
     
     # searcher.cf_queries_file(queries_json,".\maximizerResults\without.json")
     # file = open(".\F1Results\without.txt", "w")
@@ -171,6 +206,8 @@ def main():
     #variandoWEIGHTcf(queries_json)
     #variandoBCcf(queries_json)
     #variandoKcf(queries_json)
+    #variandoPredcf(queries_json)
+    #variandoUmbralcf(queries_json)
 
     ''' MOOCS '''
     with open('.\corpora\moocs\json\queries.json') as f:
@@ -178,7 +215,9 @@ def main():
     
     #variandoWEIGHTmoocs(queries_json)
     #variandoBCmoocs(queries_json)
-    variandoKmoocs(queries_json)
+    #variandoKmoocs(queries_json)
+    #variandoPredmoocs(queries_json)
+    variandoUmbralmoocs(queries_json)
     
 if __name__ == '__main__':
     main()
