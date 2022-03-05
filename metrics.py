@@ -38,7 +38,7 @@ def get_args():
 
 def normalize_precision2(precision, recall):  # normalizar a Standard 11-level
     realRecall = recall
-    newPrecision=[0,0,0,0,0,0,0,0,0,0,0]
+    newPrecision = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for i in range(len(realRecall)):
         if 0 <= realRecall[i] <= 0.1:
             if newPrecision[0] < precision[i]:
@@ -71,13 +71,11 @@ def normalize_precision2(precision, recall):  # normalizar a Standard 11-level
             if newPrecision[9] < precision[i]:
                 newPrecision[9] = precision[i]
 
-    
     p = np.array(newPrecision)
     m = np.zeros(p.size, dtype=bool)
     precision11 = []
     excptIndx = []
-    precNorm = [0,0,0,0,0,0,0,0,0,0,0]
-
+    precNorm = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     for i in range(len(newPrecision)):
         m[excptIndx] = True
@@ -229,7 +227,7 @@ def MRE_CG(relDocs, compDocs, puntDocs, nDocs):
                 CG.append(0)
     if(nDocs < aux):
         for i in range(0, aux-nDocs):
-            CG.append(0)  
+            CG.append(0)
     return CG
 
 
@@ -354,10 +352,11 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs):
         ourMRR = ourMRR + MRR(relDocs, ourDocs)
         '''MRE'''
         if corpus == "cf":
-            nDocs = 15
+            nDocs = 10
             idealDocs = ideal_docs(puntDocs, nDocs)
             DCGteach = MRE_DCG(relDocs, teachDocs, puntDocs, nDocs)
             vTeachDCG.append(DCGteach)
+            print(len(ourDocs))
             DCGour = MRE_DCG(relDocs, ourDocs, puntDocs, nDocs)
             vOurDCG.append(DCGour)
             DCGideal = MRE_DCG(relDocs, idealDocs, puntDocs, nDocs)
@@ -420,12 +419,14 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs):
         vDCGavgTeach = [sum(i) for i in zip(*vTeachDCG)]
         vDCGavgTeach = [vDCGavgTeach / len(vTeachDCG)
                         for vDCGavgTeach in vDCGavgTeach]
+
         vDCGavgOur = [sum(i) for i in zip(*vOurDCG)]
         vDCGavgOur = [vDCGavgOur / len(vOurDCG) for vDCGavgOur in vDCGavgOur]
 
         vDCGavgIdeal = [sum(i) for i in zip(*vIdealDCG)]
         vDCGavgIdeal = [vDCGavgIdeal / len(vIdealDCG)
                         for vDCGavgIdeal in vDCGavgIdeal]
+
 
         NDCGour = np.divide(vDCGavgOur, vDCGavgIdeal)
         NDCGteach = np.divide(vDCGavgTeach, vDCGavgIdeal)
@@ -443,12 +444,11 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs):
         NCGour = np.divide(vCGavgOur, vCGavgIdeal)
         NCGteach = np.divide(vCGavgTeach, vCGavgIdeal)
 
-        #CG_DCG_curve(NCGteach, NCGour,"NCG")
-        #CG_DCG_curve(NDCGteach, NDCGour,"NDCG")
-
+        CG_DCG_curve(NCGteach, NCGour,"NCG")
+        CG_DCG_curve(NDCGteach, NDCGour,"NDCG")
 
     '''Compare metrics and graphs'''
-    prec_rec_curve(vOurPrec, vTeachPrec)
+    # prec_rec_curve(vOurPrec, vTeachPrec)
     # queries_bars(vOurRPrec,vTeachRPrec)
     # nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP)
 
@@ -523,14 +523,14 @@ def CG_DCG_curve(teach, our, str):
                                    connectgaps=True,
                                    name='Teacher', line_color='red', mode='lines+markers'))
     fig = fig.update_layout(xaxis_title='Query',
-                            yaxis_title=str, title=str+ ' Vector')
+                            yaxis_title=str, title=str + ' Vector')
     fig.update_layout(
         font_color="black",
         title_font_color="red",
         legend_title_font_color="black"
     )
 
-    fig.write_html('images/' + str +'.html',
+    fig.write_html('images/' + str + '.html',
                    auto_open=True)
     fig.write_image("images/"+str+".png")
 
