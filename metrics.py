@@ -18,7 +18,7 @@ def load_docs(arg):
     with open(path+corpus+path2) as f:
         ref_docs = json.loads(f.read())
     '''OURS'''
-    with open(path+corpus+"\json\cf_results.json") as f:
+    with open(path+corpus+"\json\cfResults.json") as f:
         our_docs = json.loads(f.read())
     '''TEACHER'''
     with open('.\TFIDF_reference_results'+corpus+'_ref_qresults.json') as f:
@@ -356,7 +356,6 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs):
             idealDocs = ideal_docs(puntDocs, nDocs)
             DCGteach = MRE_DCG(relDocs, teachDocs, puntDocs, nDocs)
             vTeachDCG.append(DCGteach)
-            print(len(ourDocs))
             DCGour = MRE_DCG(relDocs, ourDocs, puntDocs, nDocs)
             vOurDCG.append(DCGour)
             DCGideal = MRE_DCG(relDocs, idealDocs, puntDocs, nDocs)
@@ -448,9 +447,9 @@ def metrics(ref_docs, teach_docs, our_docs, punt_docs):
         CG_DCG_curve(NDCGteach, NDCGour,"NDCG")
 
     '''Compare metrics and graphs'''
-    # prec_rec_curve(vOurPrec, vTeachPrec)
-    # queries_bars(vOurRPrec,vTeachRPrec)
-    # nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP)
+    prec_rec_curve(vOurPrec, vTeachPrec)
+    queries_bars(vOurRPrec,vTeachRPrec)
+    nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP)
 
 
 def nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_avg_prec, our_avg_rec, teach_avg_prec, teach_avg_rec, ourRPrec, teachRPrec, F1MacroOur, F1MacroTeach, ourMRR, teachMRR, vOurMAP, ref_docs, vTeachMAP):
@@ -552,7 +551,7 @@ def queries_bars(vOurRPrec, vTeachRPrec):
         legend_title_font_color="black"
     )
 
-    fig.update_xaxes(dtick=5)
+    fig.update_xaxes(dtick=2)
     fig.write_html('images/rprec_bars.html',
                    auto_open=True)
     fig.write_image("images/rprec_bars.png")
