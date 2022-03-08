@@ -111,15 +111,16 @@ def iterate_words(query,words_json,lens_json,thisType):
     ranking_pd = pd.json_normalize(ranking).transpose()
     print("Ordenando documentos")
     ranking_pd = ranking_pd.sort_values(0,ascending=False)
-    # if thisType=="cf":
-    #     ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > variables.CFUmbral]
-    # else:
-    #     ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > variables.MOOCSUmbral]
     print("Obteniendo documentos relevantes")
     if thisType=="cf":
-        ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > float(np.percentile(ranking_pd[0].to_numpy(), variables.CF))]
+        ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > variables.CFUmbral]
     else:
         ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > float(np.percentile(ranking_pd[0].to_numpy(), variables.MOOCS))]
+    # else:
+    #     ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > variables.MOOCSUmbral]
+    # if thisType=="cf":
+    #     ranking_pd = ranking_pd.loc[ranking_pd[0].to_numpy() > float(np.percentile(ranking_pd[0].to_numpy(), variables.CF))]
+    
     return ranking_pd
 
 def cf(query):
