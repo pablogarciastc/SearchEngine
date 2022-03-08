@@ -101,7 +101,7 @@ def variandoBCcf(queries_json):
 
 def variandoKcf(queries_json):
     file = open(".\F1Results\Kcf.txt", "w")
-    for p in np.linspace(1,5,50):
+    for p in np.linspace(0,1,11):
         variables.K=p
         searcher.cf_queries_file(queries_json,".\maximizerResults\K"+
             str(p)+".json")
@@ -110,14 +110,16 @@ def variandoKcf(queries_json):
 
 def variandoWEIGHTmoocs(queries_json):
     file = open(".\F1Results\WEIGHTmoocs.txt", "w")
-    for i in np.linspace(0.1,1,10): 
-        variables.WEIGHT_DESCRIP=i
-        for j in np.linspace(i+0.2,1,8):
-            if j<=1:
-                variables.WEIGHT_TITLEM=j
-                searcher.moocs_queries_file(queries_json,".\maximizerResults\T"+
-                    str(j)+"D"+str(i)+".json")
-                file.write("T_"+str(j)+"__D_"+str(i)+"____#"+str(F1('\moocs',"\T"+str(j)+"D"+str(i)+".json"))+"\n")
+    I=[0.8,0.9,1]
+    J=[0.8,0.9,1]
+    for i in range(len(I)): 
+        variables.WEIGHT_DESCRIP=I[i]
+        for j in range(len(J)):
+            if I[i]<=J[j]:
+                variables.WEIGHT_TITLEM=J[j]
+                searcher.moocs_queries_file(queries_json,".\maximizerResults\D"+
+                    str(I[i])+"T"+str(J[j])+".json")
+                file.write("D_"+str(I[i])+"__T_"+str(J[j])+"____#"+str(F1('\moocs',"\D"+str(I[i])+"T"+str(J[j])+".json"))+"\n")
     file.close()
 
 def variandoBCmoocs(queries_json):
@@ -150,7 +152,7 @@ def variandoBCmoocs(queries_json):
 
 def variandoKmoocs(queries_json):
     file = open(".\F1Results\Kmoocs.txt", "w")
-    for p in np.linspace(1,5,10):
+    for p in np.linspace(0.1,1,10):
         variables.KM=p
         searcher.moocs_queries_file(queries_json,".\maximizerResults\K"+
             str(p)+".json")
@@ -177,7 +179,7 @@ def variandoPredmoocs(queries_json):
 
 def variandoUmbralcf(queries_json):
     file = open(".\F1Results\ThresholdFixedcf.txt", "w")
-    for p in np.linspace(0.1,1,19):
+    for p in np.linspace(0.1,2,39):
         variables.CFUmbral=p
         searcher.cf_queries_file(queries_json,".\maximizerResults\ThresholdFixedcf"+
             str(p)+".json")
@@ -212,12 +214,15 @@ def main():
     ''' MOOCS '''
     with open('.\corpora\moocs\json\queries.json') as f:
             queries_json = json.loads(f.read())
-    
+    searcher.moocs_queries_file(queries_json,".\maximizerResults\without.json")
+    file = open(".\F1Results\without.txt", "w")
+    file.write(str(F1('\cf',"\without.json"))+"\n")
+    file.close()
     #variandoWEIGHTmoocs(queries_json)
     #variandoBCmoocs(queries_json)
     #variandoKmoocs(queries_json)
     #variandoPredmoocs(queries_json)
-    variandoUmbralmoocs(queries_json)
+    #variandoUmbralmoocs(queries_json)
     
 if __name__ == '__main__':
     main()
