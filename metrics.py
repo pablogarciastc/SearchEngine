@@ -18,7 +18,7 @@ def load_docs(arg):
     with open(path+corpus+path2) as f:
         ref_docs = json.loads(f.read())
     '''OURS'''
-    with open(path+corpus+"\json\cfResults.json") as f:
+    with open(path+corpus+"\json\moocsdef.json") as f:
         our_docs = json.loads(f.read())
     '''TEACHER'''
     with open('.\TFIDF_reference_results'+corpus+'_ref_qresults.json') as f:
@@ -459,45 +459,45 @@ def nine_Bars(ourAt10, our_docs, teachAt10, teach_docs, teachAt5, ourAt5, our_av
                                         "R-Precision", "MRR", "MAP", "P at 5", "P at 10")
                         )
     l = [(ourAt10/len(our_docs)), teachAt10/len(teach_docs)]
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   3, 3)
     fig.update_xaxes(dtick=1)
     l = [(ourAt5/len(our_docs)), teachAt5/len(teach_docs)]
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   3, 2)
     l = [f_beta(our_avg_prec, our_avg_rec, 1),
          f_beta(teach_avg_prec, teach_avg_rec, 1)]
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   2, 1)
     l = [ourRPrec/len(our_docs), teachRPrec/len(teach_docs)]
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   2, 2)
     l = [F1MacroOur, F1MacroTeach]
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   1, 3)
     l = [ourMRR/len(our_docs), teachMRR/len(teach_docs)]
 
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   2, 3)
     l = [MAP(vOurMAP, ref_docs), MAP(vTeachMAP, ref_docs)]
 
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   3, 1)
     l = [our_avg_prec, teach_avg_prec]
 
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   1, 1)
     l = [our_avg_rec, teach_avg_rec]
 
-    fig.add_trace(go.Bar(x=["Nuestro", "Profesor"], y=l,
+    fig.add_trace(go.Bar(x=["Our BM25F", "Teacher"], y=l,
                          marker=dict(color=l, coloraxis="coloraxis")),
                   1, 2)
 
@@ -517,7 +517,7 @@ def CG_DCG_curve(teach, our, str):
     length = len(our)
     fig = go.Figure()
     fig = fig.add_trace(go.Scatter(x=list(range(0, length)), y=our,
-                                   name="Our", line_color='black', mode='lines+markers',))
+                                   name="Our BM25F", line_color='black', mode='lines+markers',))
     fig = fig.add_trace(go.Scatter(x=list(range(0, length)), y=teach,
                                    connectgaps=True,
                                    name='Teacher', line_color='red', mode='lines+markers'))
@@ -541,7 +541,7 @@ def queries_bars(vOurRPrec, vTeachRPrec):
     df['num'] = range(0, len(vOurRPrec))
 
     fig = px.bar(df, x="num", y='RPrecision',
-                 title="Our R-Precision", color="RPrecision")
+                 title="Our BM25F R-Precision", color="RPrecision")
     fig = fig.update_layout(xaxis_title='Query',
                             yaxis_title='RPrecision')
 
@@ -560,7 +560,7 @@ def queries_bars(vOurRPrec, vTeachRPrec):
     df['num'] = range(0, len(vOurRPrec))
 
     fig = px.bar(df, x="num", y='RPrecision',
-                 title="Our R-Precision - Teacher R-Precision", color="RPrecision")
+                 title="Our BM25F R-Precision - Teacher R-Precision", color="RPrecision")
     fig = fig.update_layout(xaxis_title='Query',
                             yaxis_title='RPrecision')
 
@@ -592,7 +592,7 @@ def prec_rec_curve(ourVector, teacherVector):
     fig = go.Figure()
     fig = fig.update_yaxes(range=[0, 1])
     fig = fig.add_trace(go.Scatter(x=recall, y=ourVector,
-                        name="Our", line_color='black'))
+                        name="Our BM25F", line_color='black'))
     fig = fig.add_trace(go.Scatter(x=recall, y=teacherVector,
                                    connectgaps=True,
                                    name='Teacher', line_color='red', mode='lines+markers'))

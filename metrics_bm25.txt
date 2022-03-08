@@ -1,0 +1,18 @@
+Teacher's average precision: 0.351
+Our average precision: 0.456
+Teacher's average recall: 0.269
+Our average recall: 0.269
+Teacher's F1 Micro Score: 0.304
+Our F1 Micro Score: 0.339
+Teacher's F1 Macro Score: 0.253
+Our F1 Macro Score: 0.273
+Teacher's MAP: 0.186
+Our MAP: 0.188
+Teacher's precision at 5: 0.590
+Our precision at 5: 0.584
+Teacher's precision at 10: 0.486
+Our precision at 10: 0.458
+Teacher's R-precision: 0.244
+Our R-precision: 0.238
+Teacher's MRR: 0.858
+Our MRR: 0.858
