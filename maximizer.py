@@ -22,11 +22,15 @@ import pandas as pd
 
 def avg_prec_rec(relDocs, compDocs):
     hits = 0
+    prec=0
+    rec=0
     for i in range(len(compDocs)):
         if compDocs[i] in relDocs:
             hits += 1
-    prec = hits/len(compDocs)
-    rec = hits/len(relDocs)
+    if len(compDocs)!=0:
+        prec = hits/len(compDocs)
+    if len(relDocs)!=0:
+        rec = hits/len(relDocs)
     return prec, rec
 
 def f_beta(avgPrec, avgRec, beta):
@@ -179,7 +183,7 @@ def variandoPredmoocs(queries_json):
 
 def variandoUmbralcf(queries_json):
     file = open(".\F1Results\ThresholdFixedcf.txt", "w")
-    for p in np.linspace(0.1,2,39):
+    for p in np.linspace(2,3,11):
         variables.CFUmbral=p
         searcher.cf_queries_file(queries_json,".\maximizerResults\ThresholdFixedcf"+
             str(p)+".json")
@@ -190,9 +194,10 @@ def variandoUmbralmoocs(queries_json):
     file = open(".\F1Results\ThresholdFixedmoocs.txt", "w")
     for p in np.linspace(0.1,1,19):
         variables.MOOCSUmbral=p
-        searcher.moocs_queries_file(queries_json,".\maximizerResults\ThresholdFixedmoocs"+
-            str(p)+".json")
-        file.write("Umbral_"+str(p)+"____#"+str(F1('\moocs',"\ThresholdFixedmoocs"+str(p)+".json"))+"\n")
+        # searcher.moocs_queries_file(queries_json,".\maximizerResults\ThresholdFixedmoocs"+
+        #     str(p)+".json")
+        if p<1:
+            file.write("Umbral_"+str(p)+"____#"+str(F1('\moocs',"\ThresholdFixedmoocs"+str(p)+".json"))+"\n")
     file.close()
 
 def main():
@@ -216,7 +221,7 @@ def main():
             queries_json = json.loads(f.read())
     searcher.moocs_queries_file(queries_json,".\maximizerResults\without.json")
     file = open(".\F1Results\without.txt", "w")
-    file.write(str(F1('\cf',"\without.json"))+"\n")
+    file.write(str(F1('\moocs',"\without.json"))+"\n")
     file.close()
     #variandoWEIGHTmoocs(queries_json)
     #variandoBCmoocs(queries_json)
